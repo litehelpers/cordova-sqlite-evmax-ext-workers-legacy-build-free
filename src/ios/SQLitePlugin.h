@@ -30,6 +30,11 @@ typedef int WebSQLError;
 @property (nonatomic, copy) NSMutableDictionary *openDBs;
 @property (nonatomic, copy) NSMutableDictionary *appDBPaths;
 
+//-(void) openaq: (NSString *) name;
+
+-(void) open_dict: (NSDictionary *) dict;
+-(void) sql_batch_dict: (NSDictionary *) dict;
+
 // Open / Close
 -(void) open: (CDVInvokedUrlCommand*)command;
 -(void) close: (CDVInvokedUrlCommand*)command;

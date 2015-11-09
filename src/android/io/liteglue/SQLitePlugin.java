@@ -45,6 +45,103 @@ public class SQLitePlugin extends CordovaPlugin {
      * NOTE: Using default constructor, no explicit constructor.
      */
 
+  @Override
+  public Boolean shouldAllowRequest(String url) {
+Log.i("info", "*************** AQS URL");
+Log.i("info", "***************************************");
+Log.i("info", "***************************************");
+Log.i("info", "***************************************");
+Log.i("info", "***************************************");
+Log.i("info", "***************************************");
+Log.i("info", "***************************************");
+Log.i("info", "***************************************");
+Log.i("info", "***************************************");
+Log.i("info", "***************************************");
+Log.i("info", "***************************************");
+Log.i("info", "got url: " + url);
+    if (url.startsWith("aqaq", 0) || url.startsWith("file:///aq", 0)) {
+Log.i("info", "url match: " + url);
+      //webView.loadUrl("javascript:aqcallback('got uri: " + url + "')");
+try {
+      //webView.sendJavascript("aqcallback('decoded uri: " + java.net.URLDecoder.decode(url, "UTF-8")+ "')");
+      String s = java.net.URLDecoder.decode(url, "UTF-8");
+
+Log.i("info", "*********** s: " + s);
+
+String [] sp1 = s.split("#");
+if(sp1.length < 2) return false;
+Log.i("info", "*****");
+Log.i("info", "***** sp1[1]: " + sp1[1]);
+
+String [] sp2 = sp1[1].split("\\?");
+if(sp2.length < 2) return false;
+Log.i("info", "******");
+Log.i("info", "***** sp2[0]: " + sp2[0]);
+Log.i("info", "***** sp2[1]: " + sp2[1]);
+
+
+String [] sp3 = sp2[0].split(":");
+if(sp3.length < 2) return false;
+Log.i("info", "*******");
+Log.i("info", "***** sp3[0]: " + sp3[0]);
+Log.i("info", "***** sp3[1]: " + sp3[1]);
+
+int i1 = sp3[1].indexOf('$');
+if (i1 < 0) return false;
+Log.i("info", "*******.");
+String op = sp3[1].substring(0, i1);
+// XXX SECURITY TODO: GET AND CHECK SECRET CODE
+Log.i("info", "*******.");
+//if(sp4.length < 2) return false;
+
+Log.i("info", "********");
+
+//String op = sp4[0];
+String args = sp2[1];
+Log.i("info", "*********** op: " + op);
+Log.i("info", "*********** args: " + args);
+JSONArray aj = new JSONArray(args);
+
+Log.i("info", "***************************************");
+Log.i("info", "***************************************");
+Log.i("info", "***************************************");
+Log.i("info", "*************** execute");
+
+execute(op, aj, new CallbackContext(null, null) {
+
+@Override
+public void success(String s) {
+      //webView.sendJavascript("aqcallback('success with string: " + s + "')");
+      webView.sendJavascript("aqcallback('" + s + "')");
+}
+
+@Override
+public void success(JSONObject o) {
+      webView.sendJavascript("aqcallback('success with object: " + o.toString() + "')");
+}
+
+@Override
+public void success(JSONArray a) {
+Log.i("info", "**** SUCCESS WITH ARRAY: " + a.toString());
+      //webView.sendJavascript("aqcallback('success with array: " + a.toString() + "')");
+      webView.sendJavascript("aqcallback('" + java.net.URLEncoder.encode(a.toString()) + "')");
+}
+
+@Override
+public void error(String s) {
+      webView.sendJavascript("aqcallback('error with string: " + s + "')");
+}
+
+});
+
+} catch(Exception e) {}
+      return false;
+    }
+
+    return true;
+  }
+
+
     /**
      * Executes the request and returns PluginResult.
      *
@@ -58,7 +155,9 @@ public class SQLitePlugin extends CordovaPlugin {
 
         Action action;
         try {
+Log.i("info", "*.");
             action = Action.valueOf(actionAsString);
+Log.i("info", "*.");
         } catch (IllegalArgumentException e) {
             // shouldn't ever happen
             Log.e(SQLitePlugin.class.getSimpleName(), "unexpected error", e);
@@ -66,6 +165,7 @@ public class SQLitePlugin extends CordovaPlugin {
         }
 
         try {
+Log.i("info", "*.");
             return executeAndPossiblyThrow(action, args, cbc);
         } catch (JSONException e) {
             // TODO: signal JSON problem to JS
@@ -81,10 +181,14 @@ public class SQLitePlugin extends CordovaPlugin {
         JSONObject o;
         String dbname;
 
+Log.i("info", "*..");
         switch (action) {
             case open:
+Log.i("info", "*...");
                 o = args.getJSONObject(0);
+Log.i("info", "*...");
                 dbname = o.getString("name");
+Log.i("info", "*...");
                 // open database and start reading its queue
                 this.startDatabase(dbname, o, cbc);
                 break;
@@ -172,18 +276,26 @@ public class SQLitePlugin extends CordovaPlugin {
     private void startDatabase(String dbname, JSONObject options, CallbackContext cbc) {
         // TODO: is it an issue that we can orphan an existing thread?  What should we do here?
         // If we re-use the existing DBRunner it might be in the process of closing...
+Log.i("info", "**.");
         DBRunner r = dbrmap.get(dbname);
+Log.i("info", "**.");
 
         // Brody TODO: It may be better to terminate the existing db thread here & start a new one, instead.
         if (r != null) {
             // don't orphan the existing thread; just re-open the existing database.
             // In the worst case it might be in the process of closing, but even that's less serious
             // than orphaning the old DBRunner.
+Log.i("info", "aa **..");
             cbc.success("a1"); // Indicate Android version with flat JSON interface
+Log.i("info", "**..");
         } else {
+Log.i("info", "**..");
             r = new DBRunner(dbname, options, cbc);
+Log.i("info", "**..");
             dbrmap.put(dbname, r);
+Log.i("info", "**..");
             this.cordova.getThreadPool().execute(r);
+Log.i("info", "**..");
         }
     }
     /**

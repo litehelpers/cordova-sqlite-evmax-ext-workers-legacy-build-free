@@ -10,6 +10,92 @@
 
 #import "sqlite3.h"
 
+static SQLitePlugin * plugin = NULL;
+
+static UIWebView * webView = NULL;
+
+
+@interface AQSURLProtocol: NSURLProtocol
+
+@end
+
+
+@implementation AQSURLProtocol
+
++ (BOOL) canInitWithRequest:(NSURLRequest *)request {
+// XXX TBD is this really the most effocoent possible?
+    NSLog(@"got uri: %@", request.URL.absoluteString);
+    if ([request.URL.absoluteString hasPrefix:@"file:///aqaq"]) {
+        //NSString * req = request.URL.absoluteString;
+        //NSArray * topComponents = [req componentsSeparatedByString: @"#"];
+
+        NSString * req = [request.URL.absoluteString stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        NSArray * topComponents = [req componentsSeparatedByString: @"#"];
+
+        //NSString * s1 = [NSString stringWithFormat: @"got components: %@ %@", [topComponents objectAtIndex: 0], [topComponents count] < 2 ? @"" : [topComponents objectAtIndex: 1]];
+        if ([topComponents count] < 2) {
+            NSLog(@"SORRY missing # in URI: %@", req);
+            return NO;
+        }
+
+        NSString * handleString = [topComponents objectAtIndex: 1];
+        NSArray * handleComponents = [handleString componentsSeparatedByString: @"?"];
+        if ([handleComponents count] < 2) {
+            NSLog(@"SORRY missing ? in URI: %@", req);
+            return NO;
+        }
+
+        NSString * parameters = [handleComponents objectAtIndex: 1];
+
+        NSArray * routeComponents = [[handleComponents objectAtIndex: 0] componentsSeparatedByString: @":"];
+        if ([routeComponents count] < 2) {
+            NSLog(@"SORRY missing : in URI: %@", req);
+            return NO;
+        }
+
+        NSArray * routeParamComponents = [[routeComponents objectAtIndex: 1] componentsSeparatedByString: @"$"];
+        if ([routeParamComponents count] < 2) {
+            NSLog(@"SORRY missing $ in URI: %@", req);
+            return NO;
+        }
+
+        NSString * me = [routeParamComponents objectAtIndex: 0];
+        // XXX SECURITY TODO: use code parameter to check a security code, like they do in the Cordova framework
+        //NSString * code = [routeParamComponents objectAtIndex: 1];
+        // ...
+NSError * e = nil;
+        NSArray * a = [NSJSONSerialization JSONObjectWithData:[parameters dataUsingEncoding: NSUTF8StringEncoding] options:kNilOptions error: &e];
+
+        NSDictionary * d = [a objectAtIndex:0];
+        if ([me isEqualToString:@"open"])
+            [plugin open_dict:d];
+        else if ([me isEqualToString:@"backgroundExecuteSqlBatch"])
+            [plugin sql_batch_dict:d];
+
+/*
+        AQHandler * handler = [AQManager getHandlerFor:[routeComponents objectAtIndex:0]];
+        if (handler != nil) {
+            [handler handleMessage: me withParameters: parameters];
+        }
+*/
+    }
+    return NO;
+}
+
++ (NSURLRequest *) canonicalRequestForRequest:(NSURLRequest *)request {
+    return request;
+}
+
+- (void) startLoading {
+    //NSLog(@"start loading");
+}
+
+- (void) stopLoading {
+    //NSLog(@"stop loading");
+}
+
+@end
+
 
 @implementation SQLitePlugin
 
@@ -19,6 +105,10 @@
 -(void)pluginInitialize
 {
     NSLog(@"Initializing SQLitePlugin");
+
+plugin = self;
+    webView = self.webView;
+    [NSURLProtocol registerClass: [AQSURLProtocol class]];
 
     {
         openDBs = [NSMutableDictionary dictionaryWithCapacity:0];
@@ -78,7 +168,17 @@
 -(void)open: (CDVInvokedUrlCommand*)command
 {
     CDVPluginResult* pluginResult = nil;
-    NSMutableDictionary *options = [command.arguments objectAtIndex:0];
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Database opened"];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+}
+
+//-(void)open: (CDVInvokedUrlCommand*)command
+//-(void) openaq: (NSString *) name;
+//-(void) open: (NSDictionary *) dict;
+-(void) open_dict: (NSDictionary *) options;
+{
+    CDVPluginResult* pluginResult = nil;
+    //NSMutableDictionary *options = [command.arguments objectAtIndex:0];
 
     NSString *dbfilename = [options objectForKey:@"name"];
 
@@ -87,17 +187,18 @@
     //NSLog(@"using db location: %@", dblocation);
 
     NSString *dbname = [self getDBPath:dbfilename at:dblocation];
+NSLog(@"got dbname", dbname);
 
     if (dbname == NULL) {
         NSLog(@"No db name specified for open");
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"You must specify database name"];
+        //pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"You must specify database name"];
     }
     else {
         NSValue *dbPointer = [openDBs objectForKey:dbfilename];
 
         if (dbPointer != NULL) {
             NSLog(@"Reusing existing database connection for db name %@", dbfilename);
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Database opened"];
+            //pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Database opened"];
         } else {
             const char *name = [dbname UTF8String];
             sqlite3 *db;
@@ -105,7 +206,8 @@
             NSLog(@"open full db path: %@", dbname);
 
             if (sqlite3_open(name, &db) != SQLITE_OK) {
-                pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Unable to open DB"];
+                NSLog(@"open db ERROR");
+                //pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Unable to open DB"];
                 return;
             } else {
                 // for SQLCipher version:
@@ -118,9 +220,18 @@
                 if(sqlite3_exec(db, (const char*)"SELECT count(*) FROM sqlite_master;", NULL, NULL, NULL) == SQLITE_OK) {
                     dbPointer = [NSValue valueWithPointer:db];
                     [openDBs setObject: dbPointer forKey: dbfilename];
-                    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"a1"];
+                    //pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"a1"];
+
+
+            //NSString * s1 = [NSString stringWithFormat: @"got uri: %@", [ request.URL.absoluteString stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+
+            //NSString * e = [NSString stringWithFormat:@"%@('%@');", @"aqcallback", s1];
+            NSString * e = [NSString stringWithFormat:@"%@('%@');", @"aqcallback", @"a1"];
+            [webView stringByEvaluatingJavaScriptFromString: e];
+
+
                 } else {
-                    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Unable to open DB with key"];
+                    //pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Unable to open DB with key"];
                     // XXX TODO: close the db handle & [perhaps] remove from openDBs!!
                 }
             }
@@ -134,7 +245,7 @@
         NSLog(@"Warning: SQLite is not thread safe.");
     }
 
-    [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+    //[self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
 
     // NSLog(@"open cb finished ok");
 }
@@ -209,9 +320,11 @@
     }];
 }
 
--(void) executeSqlBatch: (CDVInvokedUrlCommand*)command
+//-(void) executeSqlBatch: (CDVInvokedUrlCommand*)command
+- (void) sql_batch_dict:(NSDictionary *)options
 {
-    NSMutableDictionary *options = [command.arguments objectAtIndex:0];
+NSLog(@"sb1");
+    //NSMutableDictionary *options = [command.arguments objectAtIndex:0];
     NSMutableArray *results = [NSMutableArray arrayWithCapacity:0];
     NSMutableDictionary *dbargs = [options objectForKey:@"dbargs"];
     NSNumber *flen = [options objectForKey:@"flen"];
@@ -220,12 +333,13 @@
 
     NSString *dbFileName = [dbargs objectForKey:@"dbname"];
 
-    CDVPluginResult* pluginResult;
+    //CDVPluginResult* pluginResult;
 
     int ai = 0;
 
     @synchronized(self) {
         for (int i=0; i<sc; ++i) {
+NSLog(@"sb2");
             NSString *sql = [flatlist objectAtIndex:(ai++)];
             NSNumber *pc = [flatlist objectAtIndex:(ai++)];
             int params_count = [pc integerValue];
@@ -234,10 +348,21 @@
             ai += params_count;
         }
 
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:results];
+        //pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:results];
     }
 
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+NSLog(@"sb3");
+    NSError * e = nil;
+    NSData * da = [NSJSONSerialization dataWithJSONObject:results options:kNilOptions error:&e];
+    NSString * r = [[NSString alloc] initWithData:da encoding:NSUTF8StringEncoding];
+    //[self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+
+    //NSString * cbj = [NSString stringWithFormat:@"%@('got sql result: %@');", @"aqcallback", r];
+    NSString * ur = [r stringByAddingPercentEncodingWithAllowedCharacters: [NSCharacterSet URLHostAllowedCharacterSet ]];
+    NSString * cbj = [NSString stringWithFormat:@"%@(\"%@\");", @"aqcallback", ur];
+NSLog(@"sb4 cjb: %@", cbj);
+
+    [webView stringByEvaluatingJavaScriptFromString: cbj];
 }
 
 -(void)executeSql: (NSString*)sql withParams: (NSMutableArray*)params first: (int)first count:(int)params_count onDatabaseName: (NSString*)dbFileName results: (NSMutableArray*)results
