@@ -45,101 +45,130 @@ public class SQLitePlugin extends CordovaPlugin {
      * NOTE: Using default constructor, no explicit constructor.
      */
 
-  @Override
-  public Boolean shouldAllowRequest(String url) {
-Log.i("info", "*************** AQS URL");
-Log.i("info", "***************************************");
-Log.i("info", "***************************************");
-Log.i("info", "***************************************");
-Log.i("info", "***************************************");
-Log.i("info", "***************************************");
-Log.i("info", "***************************************");
-Log.i("info", "***************************************");
-Log.i("info", "***************************************");
-Log.i("info", "***************************************");
-Log.i("info", "***************************************");
-Log.i("info", "got url: " + url);
-    if (url.startsWith("aqaq", 0) || url.startsWith("file:///aq", 0)) {
-Log.i("info", "url match: " + url);
-      //webView.loadUrl("javascript:aqcallback('got uri: " + url + "')");
-try {
-      //webView.sendJavascript("aqcallback('decoded uri: " + java.net.URLDecoder.decode(url, "UTF-8")+ "')");
-      String s = java.net.URLDecoder.decode(url, "UTF-8");
+    @Override
+    public Boolean shouldAllowRequest(String url) {
+        Log.i("info", "*************** AQS URL");
+        Log.i("info", "***************************************");
 
-Log.i("info", "*********** s: " + s);
+        if (url.startsWith("aqaq", 0) || url.startsWith("file:///aq", 0)) {
+            Log.i("info", "**** url match: " + url);
 
-String [] sp1 = s.split("#");
-if(sp1.length < 2) return false;
-Log.i("info", "*****");
-Log.i("info", "***** sp1[1]: " + sp1[1]);
+            try {
+                //webView.sendJavascript("aqcallback('decoded uri: " + java.net.URLDecoder.decode(url, "UTF-8")+ "')");
+                //String s = java.net.URLDecoder.decode(url, "UTF-8");
 
-String [] sp2 = sp1[1].split("\\?");
-if(sp2.length < 2) return false;
-Log.i("info", "******");
-Log.i("info", "***** sp2[0]: " + sp2[0]);
-Log.i("info", "***** sp2[1]: " + sp2[1]);
+                //Log.i("info", "*********** s: " + s);
 
 
-String [] sp3 = sp2[0].split(":");
-if(sp3.length < 2) return false;
-Log.i("info", "*******");
-Log.i("info", "***** sp3[0]: " + sp3[0]);
-Log.i("info", "***** sp3[1]: " + sp3[1]);
+                    String [] topComponents = url.split("#");
+                    if (topComponents.length < 2) {
+                        webView.loadUrl("javascript:aqcallback('SORRY MISSING #')");
+                        return null;
+                    }
 
-int i1 = sp3[1].indexOf('$');
-if (i1 < 0) return false;
-Log.i("info", "*******.");
-String op = sp3[1].substring(0, i1);
-// XXX SECURITY TODO: GET AND CHECK SECRET CODE
-Log.i("info", "*******.");
-//if(sp4.length < 2) return false;
+                    String handleString = topComponents[1];
 
-Log.i("info", "********");
+                    String [] handleComponents = handleString.split("\\?");
 
-//String op = sp4[0];
-String args = sp2[1];
-Log.i("info", "*********** op: " + op);
-Log.i("info", "*********** args: " + args);
-JSONArray aj = new JSONArray(args);
+                    if (handleComponents.length < 2) {
+                        webView.loadUrl("javascript:aqcallback('SORRY MISSING ?')");
+                        return null;
+                    }
 
-Log.i("info", "***************************************");
-Log.i("info", "***************************************");
-Log.i("info", "***************************************");
-Log.i("info", "*************** execute");
+                    String parameters = handleComponents[1];
 
-execute(op, aj, new CallbackContext(null, null) {
+                    String [] routeComponents = handleComponents[0].split(":");
+                    if (routeComponents.length < 2) {
+                        webView.loadUrl("javascript:aqcallback('SORRY MISSING :')");
+                        return null;
+                    }
 
-@Override
-public void success(String s) {
-      //webView.sendJavascript("aqcallback('success with string: " + s + "')");
-      webView.sendJavascript("aqcallback('" + s + "')");
-}
+                    String routeParameters = routeComponents[1];
 
-@Override
-public void success(JSONObject o) {
-      webView.sendJavascript("aqcallback('success with object: " + o.toString() + "')");
-}
+                    int routeParametersSep = routeParameters.indexOf('$');
+                    if (routeParametersSep < 0) {
+                        webView.loadUrl("javascript:aqcallback('SORRY MISSING $')");
+                        return null;
+                    }
 
-@Override
-public void success(JSONArray a) {
-Log.i("info", "**** SUCCESS WITH ARRAY: " + a.toString());
-      //webView.sendJavascript("aqcallback('success with array: " + a.toString() + "')");
-      webView.sendJavascript("aqcallback('" + java.net.URLEncoder.encode(a.toString()) + "')");
-}
+                    String method = routeParameters.substring(0, routeParametersSep);
 
-@Override
-public void error(String s) {
-      webView.sendJavascript("aqcallback('error with string: " + s + "')");
-}
+                    String internalParameters = routeParameters.substring(routeParametersSep + 1);
 
-});
+                    int internalSep = internalParameters.indexOf('@');
+                    if (internalSep < 0) {
+                        webView.loadUrl("javascript:aqcallback('SORRY MISSING @')");
+                        return null;
+                    }
 
-} catch(Exception e) {}
-      return false;
+                    String cbParameters = internalParameters.substring(0, internalSep);
+
+                    String [] cbComponents = cbParameters.split("-");
+                    if (cbComponents.length < 2) {
+                        webView.loadUrl("javascript:aqcallback('SORRY MISSING -')");
+                        return null;
+                    }
+
+                    // XXX SECURITY TODO: use code parameter to check a security code, like they do in the Cordova framework
+                    //String code = internalParameters.substring(internalParameters + 1);
+                    // ...
+
+                    //webView.loadUrl("javascript:aqcallback('got components: " + routeComponents[0] + " " + me + " " + parameters + "')");
+
+                    //manager.getHandler(routeComponents[0]).handleMessage(method, parameters, cbComponents[0], cbComponents[1]);
+
+                String args = java.net.URLDecoder.decode(parameters, "UTF-8");
+
+                //Log.i("info", "*********** op: " + op);
+                Log.i("info", "*********** args: " + args);
+
+                final String cbHandler = cbComponents[0];
+                final String cbId = cbComponents[1];
+
+                JSONArray aj = new JSONArray(args);
+
+                Log.i("info", "*************** execute");
+                Log.i("info", "***************************************");
+
+                execute(method, aj, new CallbackContext(null, null) {
+                    @Override
+                    public void success(String s) {
+                        Log.i("info", "*************** SUCCESS WITH STRING: " + s);
+                        //webView.sendJavascript("aqcallback('" + s + "')");
+                        String cbScript = "aqcallback('" + cbHandler + "', '" + cbId + "?" + s + "')";
+                        Log.i("info", "send Javascript: " + cbScript);
+                        webView.sendJavascript(cbScript);
+                    }
+
+                    @Override
+                    public void success(JSONObject o) {
+                        webView.sendJavascript("aqcallback('success with object: " + o.toString() + "')");
+                    }
+
+                    @Override
+                    public void success(JSONArray a) {
+                        Log.i("info", "**** SUCCESS WITH ARRAY: " + a.toString());
+                        //webView.sendJavascript("aqcallback('" + java.net.URLEncoder.encode(a.toString()) + "')");
+                        try {
+                        String cbScript = "aqcallback('" + cbHandler + "', '" + cbId + "?" + java.net.URLEncoder.encode(a.toString(), "UTF-8") + "')";
+                        Log.i("info", "send Javascript: " + cbScript);
+                        webView.sendJavascript(cbScript);
+                        } catch(Exception e) {}
+                    }
+
+                    @Override
+                    public void error(String s) {
+                        webView.sendJavascript("aqcallback('error with string: " + s + "')");
+                    }
+
+                });
+
+            } catch(Exception e) {}
+            return false;
+        }
+
+        return true;
     }
-
-    return true;
-  }
 
 
     /**

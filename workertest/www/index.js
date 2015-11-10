@@ -20,13 +20,11 @@ var app = {
 window.sqlitePlugin.openDatabase({name: 'dummy'}, function(success) {
 
         var w = new Worker('mytask.js');
+        aqworker('w1', w);
 
-        opencb = function() {
-          w.postMessage('next');
-        };
-        execsqlcb = function(s) {
-          alert('got data: ' + decodeURIComponent(s));
-        };
+        w.addEventListener('message', function(ev) {
+          alert('got data: ' + ev.data);
+        });
 
         w.postMessage('go');
 

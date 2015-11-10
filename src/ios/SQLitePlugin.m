@@ -59,18 +59,33 @@ static UIWebView * webView = NULL;
             return NO;
         }
 
-        NSString * me = [routeParamComponents objectAtIndex: 0];
+        NSString * method = [routeParamComponents objectAtIndex: 0];
+
+        NSArray * internalComponents = [[routeParamComponents objectAtIndex: 1] componentsSeparatedByString: @"@"];
+        if ([internalComponents count] < 2) {
+            NSLog(@"SORRY missing @ in URI: %@", req);
+            return NO;
+        }
+
+        NSArray * cbComponents = [[internalComponents objectAtIndex: 0] componentsSeparatedByString: @"-"];
+        if ([cbComponents count] < 2) {
+            NSLog(@"SORRY missing - in URI: %@", req);
+            return NO;
+        }
+
+
         // XXX SECURITY TODO: use code parameter to check a security code, like they do in the Cordova framework
-        //NSString * code = [routeParamComponents objectAtIndex: 1];
+        //NSString * code = [internalComponents objectAtIndex: 1];
         // ...
-NSError * e = nil;
+
+        NSError * e = nil;
         NSArray * a = [NSJSONSerialization JSONObjectWithData:[parameters dataUsingEncoding: NSUTF8StringEncoding] options:kNilOptions error: &e];
 
         NSDictionary * d = [a objectAtIndex:0];
-        if ([me isEqualToString:@"open"])
-            [plugin open_dict:d];
-        else if ([me isEqualToString:@"backgroundExecuteSqlBatch"])
-            [plugin sql_batch_dict:d];
+        if ([method isEqualToString:@"open"])
+            [plugin open_dict:d cbHandler: [cbComponents objectAtIndex: 0] cbId: [cbComponents objectAtIndex: 1]];
+        else if ([method isEqualToString:@"backgroundExecuteSqlBatch"])
+            [plugin sql_batch_dict:d cbHandler: [cbComponents objectAtIndex: 0] cbId: [cbComponents objectAtIndex: 1]];
 
 /*
         AQHandler * handler = [AQManager getHandlerFor:[routeComponents objectAtIndex:0]];
@@ -175,7 +190,7 @@ plugin = self;
 //-(void)open: (CDVInvokedUrlCommand*)command
 //-(void) openaq: (NSString *) name;
 //-(void) open: (NSDictionary *) dict;
--(void) open_dict: (NSDictionary *) options;
+-(void) open_dict: (NSDictionary *) options cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid
 {
     CDVPluginResult* pluginResult = nil;
     //NSMutableDictionary *options = [command.arguments objectAtIndex:0];
@@ -225,10 +240,13 @@ NSLog(@"got dbname", dbname);
 
             //NSString * s1 = [NSString stringWithFormat: @"got uri: %@", [ request.URL.absoluteString stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 
-            //NSString * e = [NSString stringWithFormat:@"%@('%@');", @"aqcallback", s1];
-            NSString * e = [NSString stringWithFormat:@"%@('%@');", @"aqcallback", @"a1"];
-            [webView stringByEvaluatingJavaScriptFromString: e];
+            //NSString * e = [NSString stringWithFormat:@"%@('%@');", @"aqcallback", @"a1"];
+            //[webView stringByEvaluatingJavaScriptFromString: e];
 
+
+                    NSString * myScript = [NSString stringWithFormat:@"%@('%@', '%@?%@');", @"aqcallback", cbHandler, cbid, @"a1"];
+                    NSLog(@"dispatch Javascript: %@", myScript);
+                    [webView stringByEvaluatingJavaScriptFromString: myScript];
 
                 } else {
                     //pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Unable to open DB with key"];
@@ -321,7 +339,7 @@ NSLog(@"got dbname", dbname);
 }
 
 //-(void) executeSqlBatch: (CDVInvokedUrlCommand*)command
-- (void) sql_batch_dict:(NSDictionary *)options
+- (void) sql_batch_dict:(NSDictionary *)options cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid
 {
 NSLog(@"sb1");
     //NSMutableDictionary *options = [command.arguments objectAtIndex:0];
@@ -359,10 +377,15 @@ NSLog(@"sb3");
 
     //NSString * cbj = [NSString stringWithFormat:@"%@('got sql result: %@');", @"aqcallback", r];
     NSString * ur = [r stringByAddingPercentEncodingWithAllowedCharacters: [NSCharacterSet URLHostAllowedCharacterSet ]];
-    NSString * cbj = [NSString stringWithFormat:@"%@(\"%@\");", @"aqcallback", ur];
-NSLog(@"sb4 cjb: %@", cbj);
+    //NSString * cbj = [NSString stringWithFormat:@"%@(\"%@\");", @"aqcallback", ur];
+//NSLog(@"sb4 cjb: %@", cbj);
 
-    [webView stringByEvaluatingJavaScriptFromString: cbj];
+    //[webView stringByEvaluatingJavaScriptFromString: cbj];
+
+    // NOTE: double-quotes needed when sending URL-encoded JSON results
+    NSString * myScript = [NSString stringWithFormat:@"%@('%@', \"%@?%@\");", @"aqcallback", cbHandler, cbid, ur];
+    NSLog(@"dispatch Javascript: %@", myScript);
+    [webView stringByEvaluatingJavaScriptFromString: myScript];
 }
 
 -(void)executeSql: (NSString*)sql withParams: (NSMutableArray*)params first: (int)first count:(int)params_count onDatabaseName: (NSString*)dbFileName results: (NSMutableArray*)results

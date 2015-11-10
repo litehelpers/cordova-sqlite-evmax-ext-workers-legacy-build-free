@@ -32,8 +32,10 @@ typedef int WebSQLError;
 
 //-(void) openaq: (NSString *) name;
 
--(void) open_dict: (NSDictionary *) dict;
--(void) sql_batch_dict: (NSDictionary *) dict;
+//-(void) open_dict: (NSDictionary *) dict;
+//-(void) sql_batch_dict: (NSDictionary *) dict;
+-(void) open_dict: (NSDictionary *) dict cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid;
+-(void) sql_batch_dict: (NSDictionary *) dict cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid;
 
 // Open / Close
 -(void) open: (CDVInvokedUrlCommand*)command;

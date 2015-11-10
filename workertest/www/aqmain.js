@@ -1,11 +1,13 @@
-var opencb = null;
-var execsqlcb = null;
+var aqmap = {};
 
-// NOTE: for some reason aqcallback needs to be in Javascript file, NOT in index.html:
-function aqcallback(s) {
-  if (s === 'a1') {
-    if (!!opencb) opencb();
-  } else {
-    if (!!execsqlcb) execsqlcb(s);
-  }
+function aqcallback(cbHandler, s) {
+  h = aqmap[cbHandler];
+  if (!!h) h(s);
+}
+
+function aqworker(handlerId, w) {
+  aqmap[handlerId] = function(s) {
+    w.postMessage(s);
+  };
+  w.postMessage('!!!sethandlername?'+handlerId);
 }
