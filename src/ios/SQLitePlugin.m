@@ -23,16 +23,12 @@ static UIWebView * webView = NULL;
 @implementation AQSURLProtocol
 
 + (BOOL) canInitWithRequest:(NSURLRequest *)request {
-// XXX TBD is this really the most effocoent possible?
+    // XXX TBD is this really the most efficient possible?
     NSLog(@"got uri: %@", request.URL.absoluteString);
     if ([request.URL.absoluteString hasPrefix:@"file:///aqaq"]) {
-        //NSString * req = request.URL.absoluteString;
-        //NSArray * topComponents = [req componentsSeparatedByString: @"#"];
-
-        NSString * req = [request.URL.absoluteString stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        NSString * req = request.URL.absoluteString;
         NSArray * topComponents = [req componentsSeparatedByString: @"#"];
 
-        //NSString * s1 = [NSString stringWithFormat: @"got components: %@ %@", [topComponents objectAtIndex: 0], [topComponents count] < 2 ? @"" : [topComponents objectAtIndex: 1]];
         if ([topComponents count] < 2) {
             NSLog(@"SORRY missing # in URI: %@", req);
             return NO;
@@ -46,6 +42,8 @@ static UIWebView * webView = NULL;
         }
 
         NSString * parameters = [handleComponents objectAtIndex: 1];
+        NSString * json = [parameters stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        //NSLog(@"req json: %@", json);
 
         NSArray * routeComponents = [[handleComponents objectAtIndex: 0] componentsSeparatedByString: @":"];
         if ([routeComponents count] < 2) {
@@ -79,7 +77,8 @@ static UIWebView * webView = NULL;
         // ...
 
         NSError * e = nil;
-        NSArray * a = [NSJSONSerialization JSONObjectWithData:[parameters dataUsingEncoding: NSUTF8StringEncoding] options:kNilOptions error: &e];
+        NSArray * a = [NSJSONSerialization JSONObjectWithData:[json dataUsingEncoding: NSUTF8StringEncoding] options:kNilOptions error: &e];
+        //NSLog(@"req array length: %lu", [a count]);
 
         NSDictionary * d = [a objectAtIndex:0];
         if ([method isEqualToString:@"open"])
@@ -87,7 +86,7 @@ static UIWebView * webView = NULL;
         else if ([method isEqualToString:@"backgroundExecuteSqlBatch"])
             [plugin sql_batch_dict:d cbHandler: [cbComponents objectAtIndex: 0] cbId: [cbComponents objectAtIndex: 1]];
 
-/*
+/* FUTURE TBD:
         AQHandler * handler = [AQManager getHandlerFor:[routeComponents objectAtIndex:0]];
         if (handler != nil) {
             [handler handleMessage: me withParameters: parameters];
@@ -188,8 +187,6 @@ plugin = self;
 }
 
 //-(void)open: (CDVInvokedUrlCommand*)command
-//-(void) openaq: (NSString *) name;
-//-(void) open: (NSDictionary *) dict;
 -(void) open_dict: (NSDictionary *) options cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid
 {
     CDVPluginResult* pluginResult = nil;
@@ -202,7 +199,7 @@ plugin = self;
     //NSLog(@"using db location: %@", dblocation);
 
     NSString *dbname = [self getDBPath:dbfilename at:dblocation];
-NSLog(@"got dbname", dbname);
+    //NSLog(@"got dbname", dbname);
 
     if (dbname == NULL) {
         NSLog(@"No db name specified for open");
@@ -236,13 +233,6 @@ NSLog(@"got dbname", dbname);
                     dbPointer = [NSValue valueWithPointer:db];
                     [openDBs setObject: dbPointer forKey: dbfilename];
                     //pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"a1"];
-
-
-            //NSString * s1 = [NSString stringWithFormat: @"got uri: %@", [ request.URL.absoluteString stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
-
-            //NSString * e = [NSString stringWithFormat:@"%@('%@');", @"aqcallback", @"a1"];
-            //[webView stringByEvaluatingJavaScriptFromString: e];
-
 
                     NSString * myScript = [NSString stringWithFormat:@"%@('%@', '%@?%@');", @"aqcallback", cbHandler, cbid, @"a1"];
                     NSLog(@"dispatch Javascript: %@", myScript);
@@ -348,6 +338,7 @@ NSLog(@"sb1");
     NSNumber *flen = [options objectForKey:@"flen"];
     NSMutableArray *flatlist = [options objectForKey:@"flatlist"];
     int sc = [flen integerValue];
+    //NSLog(@"sc: %d", sc);
 
     NSString *dbFileName = [dbargs objectForKey:@"dbname"];
 
@@ -357,9 +348,11 @@ NSLog(@"sb1");
 
     @synchronized(self) {
         for (int i=0; i<sc; ++i) {
-NSLog(@"sb2");
+            //NSLog(@"sb2");
             NSString *sql = [flatlist objectAtIndex:(ai++)];
+            //NSLog(@"sql: %@", sql);
             NSNumber *pc = [flatlist objectAtIndex:(ai++)];
+            //NSLog(@"pc: %@", pc);
             int params_count = [pc integerValue];
 
             [self executeSql:sql withParams:flatlist first:ai count:params_count onDatabaseName:dbFileName results:results];
@@ -369,18 +362,18 @@ NSLog(@"sb2");
         //pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:results];
     }
 
-NSLog(@"sb3");
+    //[self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+
+    //NSLog(@"sb3");
+    //NSLog(@"results length: %lu", [results count]);
+
     NSError * e = nil;
     NSData * da = [NSJSONSerialization dataWithJSONObject:results options:kNilOptions error:&e];
     NSString * r = [[NSString alloc] initWithData:da encoding:NSUTF8StringEncoding];
-    //[self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    //NSLog(@"res string: %@", r);
 
-    //NSString * cbj = [NSString stringWithFormat:@"%@('got sql result: %@');", @"aqcallback", r];
     NSString * ur = [r stringByAddingPercentEncodingWithAllowedCharacters: [NSCharacterSet URLHostAllowedCharacterSet ]];
-    //NSString * cbj = [NSString stringWithFormat:@"%@(\"%@\");", @"aqcallback", ur];
-//NSLog(@"sb4 cjb: %@", cbj);
-
-    //[webView stringByEvaluatingJavaScriptFromString: cbj];
+    //NSLog(@"encoded res: %@", ur);
 
     // NOTE: double-quotes needed when sending URL-encoded JSON results
     NSString * myScript = [NSString stringWithFormat:@"%@('%@', \"%@?%@\");", @"aqcallback", cbHandler, cbid, ur];
