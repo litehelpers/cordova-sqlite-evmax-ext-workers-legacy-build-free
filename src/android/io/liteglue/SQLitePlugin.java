@@ -150,7 +150,8 @@ public class SQLitePlugin extends CordovaPlugin {
                         Log.i("info", "**** SUCCESS WITH ARRAY: " + a.toString());
                         //webView.sendJavascript("aqcallback('" + java.net.URLEncoder.encode(a.toString()) + "')");
                         try {
-                        String cbScript = "aqcallback('" + cbHandler + "', '" + cbId + "?" + java.net.URLEncoder.encode(a.toString(), "UTF-8") + "')";
+                        String cbScript = "aqcallback('" + cbHandler + "', '" + cbId + "?" +
+                            java.net.URLEncoder.encode(a.toString(), "UTF-8").replace("+", "%20") + "')";
                         Log.i("info", "send Javascript: " + cbScript);
                         webView.sendJavascript(cbScript);
                         } catch(Exception e) {}
