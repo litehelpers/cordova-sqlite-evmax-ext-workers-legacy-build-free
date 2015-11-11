@@ -1,16 +1,32 @@
-# Cordova/PhoneGap sqlite storage - free enterprise version with internal memory improvements
+# Cordova/PhoneGap sqlite storage - free enterprise version with web worker test
  
+Test release with *very basic* support web workers in `sample-worker/www` (test in `workertest/www`) for Android and iOS *ONLY*.
+
 Native interface to sqlite in a Cordova/PhoneGap plugin for Android, iOS, and Windows "Universal" (8.1) with API similar to HTML5/[Web SQL API](http://www.w3.org/TR/webdatabase/).
 
 This version is available under GPL v3 (http://www.gnu.org/licenses/gpl.txt) or commercial license. Contact for commercial license: info@litehelpers.net
 
-TBD description of this version branch
-
 NOTE (TBD): no Circle CI or Travis CI working in this version branch.
+
+## SECURITY TODO(s)
+
+- XHR URI request mechanism needs a secret code mechanism, like they have in the Cordova framework
+
+## Usage in web worker(s)
+
+It is *highly* recommended to use the sample application in `sample-worker/www` as a starting point, at least during initial testing.
+
+Some **important** pointers:
+- See `sample-worker/www/index.html`, the `aqmain.js` script must be included before your app Javascript
+- See `sample-worker/www/index.js`: a worker must be registered with a unique name using the `aqregister` function before the worker can have access to the sqlite plugin features
+- See `sample-worker/www/sample-worker.js`: some requirements in the worker script:
+  - The following scripts must be imported: `aqworker.js` and `Worker-SQLitePlugin.js`
+  - To receive messages from the main thread, please use `self.addEventListener` instead of `self.onmessage`
+  - This plugin sends internal string messages starting with `!!!` from the main thread to the worker thread. It is *highly* recommended to filter the messages for your own pattern.
 
 ## Status
 
-- Free support is available in public locations such as [litehelpers / Cordova-sqlite-enterprise-free / issues](https://github.com/litehelpers/Cordova-sqlite-enterprise-free/issues) and https://gitter.im/litehelpers/Cordova-sqlite-storage; commercial support is available by contacting: info@litehelpers.net
+- ~~Free support is available in public locations such as [litehelpers / Cordova-sqlite-enterprise-free / issues](https://github.com/litehelpers/Cordova-sqlite-enterprise-free/issues) and https://gitter.im/litehelpers/Cordova-sqlite-storage;~~ commercial support is available by contacting: info@litehelpers.net
 - Patches patches will *NOT* be accepted on this project due to potential licensing issues.
 - Features omitted from this version branch: pre-populated database support, REGEXP extension for iOS, WP(7/8) and Amazon Fire-OS support
 - Windows "Universal" (8.1) version is in an experimental/pre-alpha state:
