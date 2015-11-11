@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    id="cordova-sqlite-evfree"
+    id="cordova-sqlite-worker-test"
     version="0.8.0-pre">
 
     <name>Cordova sqlite storage - free enterprise version with Android memory fix</name>
@@ -27,6 +27,8 @@
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="SQLitePlugin">
                 <param name="android-package" value="io.liteglue.SQLitePlugin"/>
+                <!-- THANKS: cordova-plugin-whitelist -->
+                <param name="onload" value="true" />
             </feature>
         </config-file>
 
@@ -49,6 +51,8 @@
         <config-file target="config.xml" parent="/*">
             <feature name="SQLitePlugin">
                 <param name="ios-package" value="SQLitePlugin" />
+                <!-- THANKS: cordova-plugin-whitelist -->
+                <param name="onload" value="true" />
             </feature>
         </config-file>
 
