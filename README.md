@@ -23,6 +23,7 @@ Some **important** pointers:
   - The following scripts must be imported: `aqworker.js` and `Worker-SQLitePlugin.js`
   - To receive messages from the main thread, please use `self.addEventListener` instead of `self.onmessage`
   - This plugin sends internal string messages starting with `!!!` from the main thread to the worker thread. It is *highly* recommended to filter the messages for your own pattern.
+  - Use `sqlitePlugin.openDatabase` instead of `window.sqlitePlugin.openDatabase`
 
 ## Status
 
