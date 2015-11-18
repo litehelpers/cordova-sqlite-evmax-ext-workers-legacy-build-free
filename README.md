@@ -25,9 +25,18 @@ Some **important** pointers:
   - This plugin sends internal string messages starting with `!!!` from the main thread to the worker thread. It is *highly* recommended to filter the messages for your own pattern.
   - Use `sqlitePlugin.openDatabase` instead of `window.sqlitePlugin.openDatabase`
 
+## LIMITATIONS and other TODO(s) to be fixed:
+
+- it is currently not possible to close or delete a database from a web worker (iOS version, needs to be tested in Android version)
+- extra logging statements
+- source code changes to the native Android and iOS versions needs some cleanup
+- iOS version does not support access from the main thread or access to the same database from multiple threads
+- If the transaction batch queue grows too big, the Android version will break due to the internal XHR URI limitation. A workaround needs to be implemented.
+- The Android version generates ugly "404 (not found)" XHR errors in the debug console.
+
 ## Status
 
-- ~~Free support is available in public locations such as [litehelpers / Cordova-sqlite-enterprise-free / issues](https://github.com/litehelpers/Cordova-sqlite-enterprise-free/issues) and https://gitter.im/litehelpers/Cordova-sqlite-storage;~~ commercial support is available by contacting: info@litehelpers.net
+- ~~Free support is available in [litehelpers / Cordova-sqlite-enterprise-free / issues](https://github.com/litehelpers/Cordova-sqlite-enterprise-free/issues);~~ commercial support is available by contacting: info@litehelpers.net
 - Patches patches will *NOT* be accepted on this project due to potential licensing issues.
 - Features omitted from this version branch: pre-populated database support, REGEXP extension for iOS, WP(7/8) and Amazon Fire-OS support
 - Windows "Universal" (8.1) version is in an experimental/pre-alpha state:
