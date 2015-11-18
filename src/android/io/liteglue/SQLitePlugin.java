@@ -66,7 +66,13 @@ public class SQLitePlugin extends CordovaPlugin {
                         return null;
                     }
 
+                    // no longer needed, should be freed:
+                    url = null;
+
                     String handleString = topComponents[1];
+
+                    // no longer needed, should be freed:
+                    topComponents = null;
 
                     String [] handleComponents = handleString.split("\\?");
 
@@ -82,6 +88,9 @@ public class SQLitePlugin extends CordovaPlugin {
                         webView.loadUrl("javascript:aqcallback('SORRY MISSING :')");
                         return null;
                     }
+
+                    // no longer needed, should be freed:
+                    handleComponents = null;
 
                     String routeParameters = routeComponents[1];
 
@@ -119,6 +128,9 @@ public class SQLitePlugin extends CordovaPlugin {
 
                 String args = java.net.URLDecoder.decode(parameters, "UTF-8");
 
+                // no longer needed, should be freed:
+                parameters = null;
+
                 //Log.i("info", "*********** op: " + op);
                 Log.i("info", "*********** args: " + args);
 
@@ -126,6 +138,9 @@ public class SQLitePlugin extends CordovaPlugin {
                 final String cbId = cbComponents[1];
 
                 JSONArray aj = new JSONArray(args);
+
+                // no longer needed, should be freed:
+                args = null;
 
                 Log.i("info", "*************** execute");
                 Log.i("info", "***************************************");
