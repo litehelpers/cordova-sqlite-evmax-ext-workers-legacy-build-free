@@ -34,7 +34,11 @@ public class SQLitePlugin extends CordovaPlugin {
      * NOTE: no public static accessor to db (runner) map since it would not work with db threading.
      * FUTURE put DBRunner into a public class that can provide external accessor.
      */
+    // FUTURE TBD declare as HashMap<>??
     static ConcurrentHashMap<String, DBRunner> dbrmap = new ConcurrentHashMap<String, DBRunner>();
+
+    // FUTURE TBD HashMap<>??
+    static ConcurrentHashMap<String, Batch> batchmap = new ConcurrentHashMap<String, Batch>();
 
     /**
      * SQLiteConnector for native sqlite library access
@@ -253,6 +257,81 @@ Log.i("info", "*...");
 
                 break;
 
+            // XXX TODO TODO IMPROVED ERROR CHECKING FOR THESE CASES:
+            case batchStart:
+                Log.i("info", "======== batchStart");
+                JSONObject allargs1 = args.getJSONObject(0);
+
+                JSONObject dbargs1 = allargs1.getJSONObject("dbargs");
+                String dbname1 = dbargs1.getString("dbname");
+
+                String mybatchid1 = allargs1.getString("batchid");
+                int mylen1 = allargs1.getInt("flen");
+
+                Batch b = new Batch(dbname1, mybatchid1, mylen1);
+                batchmap.put(mybatchid1, b);
+                Log.i("info", "======== batchStart done");
+
+                break;
+
+            case batchPart:
+                Log.i("info", "======== batchPart");
+                JSONObject allargs2 = args.getJSONObject(0);
+                Log.i("info", "======== batchPart .");
+                String mybatchid2 = allargs2.getString("batchid");
+                Log.i("info", "======== batchPart ..");
+
+                JSONArray part = allargs2.getJSONArray("part");
+                Log.i("info", "======== batchPart ...");
+                Batch b2 = batchmap.get(mybatchid2);
+                Log.i("info", "======== batchPart ....");
+                for (int ii2 = 0; ii2 < part.length(); ++ii2) {
+                  b2.flatlist.put(part.get(ii2));
+
+                  // XXX TODO: stringifys all values}
+                  //String s = part.getString(ii2);
+                  //Log.i("info", "part string: " + s);
+                  //b2.flatlist.put(s);
+                  //Log.i("info", "======== batchPart .");
+
+                  //if (part.isInt(ii2)) Log.i("info", "======== batchPart int " + part.getInt(ii2));
+                  //if (part.isString(ii2)) Log.i("info", "======== batchPart string " + part.getString(ii2));
+
+/*
+                  Object o2 = part.get(ii2);
+                  Log.i("info", "======== batchPart o2: " + o2.toString());
+                  try {
+                  if (o2 instanceof Number) b2.flatlist.put(part.getInt(ii2));
+                  else b2.flatlist.put(o2.toString());
+                  Log.i("info", "======== batchPart .");
+                  } catch(Exception e) {
+                  Log.i("info", "======== batchPart exception: " + e.toString());
+                  }
+*/
+                }
+                Log.i("info", "======== batchPart done");
+
+                break;
+
+            case batchRun:
+                Log.i("info", "======== batchRun");
+                JSONObject allargs3 = args.getJSONObject(0);
+                String mybatchid3 = allargs3.getString("batchid");
+                Batch b3 = batchmap.get(mybatchid3);
+                batchmap.remove(mybatchid3);
+
+                JSONObject dbargs3 = new JSONObject();
+                dbargs3.put("dbname", b3.dbname);
+                allargs3.put("dbargs", dbargs3);
+                allargs3.put("flen", b3.flen);
+                allargs3.put("flatlist", b3.flatlist);
+
+                args = new JSONArray();
+                args.put(allargs3);
+
+                Log.i("info", "======== batchRun execute");
+                // fallthrough to execute
+
             case executeSqlBatch:
             case backgroundExecuteSqlBatch:
                 JSONObject allargs = args.getJSONObject(0);
@@ -269,8 +348,12 @@ Log.i("info", "*...");
 
                 // XXX TODO: currently goes through flatlist in multiple [2] passes
                 for (int i = 0; i < mylen; i++) {
+                    Log.i("info", "======== ai: " + ai);
                     queries[i] = flatlist.getString(ai++);
+                    Log.i("info", "======== got query: " + queries[i]);
+                    Log.i("info", "======== ai: " + ai);
                     int alen = flatlist.getInt(ai++);
+                    Log.i("info", "======== got alen: " + alen);
                     ai += alen;
                 }
 
@@ -693,6 +776,20 @@ Log.i("info", "**..");
         }
     }
 
+    private final class Batch {
+        final String dbname;
+        final String batchid;
+        final int flen;
+        final JSONArray flatlist;
+
+        Batch(String dbname, String batchid, int flen) {
+            this.dbname = dbname;
+            this.batchid = batchid;
+            this.flen = flen;
+            this.flatlist = new JSONArray();
+        }
+    }
+
     private final class DBQuery {
         // XXX TODO replace with DBRunner action enum:
         final boolean stop;
@@ -737,6 +834,9 @@ Log.i("info", "**..");
         delete,
         executeSqlBatch,
         backgroundExecuteSqlBatch,
+        batchStart,
+        batchPart,
+        batchRun,
     }
 }
 

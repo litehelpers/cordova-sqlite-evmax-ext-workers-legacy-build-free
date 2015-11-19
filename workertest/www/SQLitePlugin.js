@@ -22,6 +22,8 @@ Contact for commercial license: info@litehelpers.net
 
   MAX_SQL_CHUNK = 0;
 
+  var MAX_PART_SIZE = 1;
+
   txLocks = {};
 
   useflatjson = false;
@@ -482,6 +484,8 @@ Contact for commercial license: info@litehelpers.net
     }
   };
 
+  var batchid = 0;
+
   SQLitePluginTransaction.prototype.run_batch_flatjson = function(batchExecutes, handlerFor) {
     var flatlist, i, l, len1, mycb, mycbmap, p, ref, request;
     flatlist = [];
@@ -566,6 +570,70 @@ Contact for commercial license: info@litehelpers.net
         ++i;
       }
     };
+
+    // XXX TBD check for empty batch?
+
+    console.log('send flatlist: ' + JSON.stringify(flatlist));
+
+    ++batchid;
+    var batchname = aqcbhandlername + '.' + batchid;
+
+    var rem = flatlist;
+    flatlist = null;
+
+    aqrequest('sq', 'batchStart', encodeURIComponent(JSON.stringify([
+      {
+        dbargs: {
+          dbname: this.db.dbname
+        },
+        batchid: batchname,
+        flen: batchExecutes.length,
+        //flatlist: flatlist
+      }
+    ])), function(s) {
+      //self.postMessage('got batchStart response');
+    });
+
+    var k = 0;
+    var partid = 0;
+
+    while (rem.length > 0) {
+    var rlength = rem.length;
+    var pl = (rlength > MAX_PART_SIZE) ? MAX_PART_SIZE : rlength;
+    var part = rem.slice(0, pl);
+    rem = rem.slice(pl);
+    console.log('part: ' + JSON.stringify(part));
+    console.log('rem: ' + JSON.stringify(rem));
+
+    aqrequest('sq', 'batchPart', encodeURIComponent(JSON.stringify([
+      {
+        batchid: batchname,
+        partid: ++partid,
+        flen: batchExecutes.length,
+        part: part
+      }
+    ])), function(s) {
+      //self.postMessage('got batchStart response');
+    });
+
+    }
+
+    aqrequest('sq', 'batchRun', encodeURIComponent(JSON.stringify([
+      {
+        batchid: batchname,
+      }
+    ])), function(s) {
+      //self.postMessage('got sql response');
+      //self.postMessage('sql response s: ' + s);
+      var json = decodeURIComponent(s);
+      //self.postMessage('sql json response: ' + json);
+      var res = JSON.parse(json);
+      //self.postMessage('sql response object: ' + JSON.stringify(res));
+      mycb(res);
+    });
+
+    return;
+
     //cordova.exec(mycb, null, "SQLitePlugin", "backgroundExecuteSqlBatch", [
     aqrequest('sq', 'backgroundExecuteSqlBatch', encodeURIComponent(JSON.stringify([
       {

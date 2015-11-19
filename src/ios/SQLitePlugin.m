@@ -14,6 +14,7 @@ static SQLitePlugin * plugin = NULL;
 
 static UIWebView * webView = NULL;
 
+static NSMutableDictionary * batchmap = NULL;
 
 @interface AQSURLProtocol: NSURLProtocol
 
@@ -85,6 +86,12 @@ static UIWebView * webView = NULL;
             [plugin open_dict:d cbHandler: [cbComponents objectAtIndex: 0] cbId: [cbComponents objectAtIndex: 1]];
         else if ([method isEqualToString:@"backgroundExecuteSqlBatch"])
             [plugin sql_batch_dict:d cbHandler: [cbComponents objectAtIndex: 0] cbId: [cbComponents objectAtIndex: 1]];
+        else if ([method isEqualToString: @"batchStart"])
+            [plugin batch_start: d];
+        else if ([method isEqualToString: @"batchPart"])
+            [plugin batch_part: d];
+        else if ([method isEqualToString: @"batchRun"])
+            [plugin batch_run: d cbHandler: [cbComponents objectAtIndex: 0] cbId: [cbComponents objectAtIndex: 1]];
 
 /* FUTURE TBD:
         AQHandler * handler = [AQManager getHandlerFor:[routeComponents objectAtIndex:0]];
@@ -120,7 +127,9 @@ static UIWebView * webView = NULL;
 {
     NSLog(@"Initializing SQLitePlugin");
 
-plugin = self;
+    plugin = self;
+    batchmap = [NSMutableDictionary dictionaryWithCapacity: 0];
+
     webView = self.webView;
     [NSURLProtocol registerClass: [AQSURLProtocol class]];
 
@@ -326,6 +335,57 @@ plugin = self;
     [self.commandDelegate runInBackground:^{
         [self executeSqlBatch: command];
     }];
+}
+
+- (void) batch_start:(NSDictionary *)options
+{
+    NSMutableDictionary *dbargs = [options objectForKey:@"dbargs"];
+    NSString * batchid = [options objectForKey: @"batchid"];
+    NSNumber *flen = [options objectForKey:@"flen"];
+    //NSMutableArray *flatlist = [options objectForKey:@"flatlist"];
+    //int sc = [flen integerValue];
+    //NSLog(@"sc: %d", sc);
+
+    NSString *dbFileName = [dbargs objectForKey:@"dbname"];
+    NSMutableDictionary * d1 = [NSMutableDictionary dictionaryWithCapacity: 0];
+    [d1 setObject: dbFileName forKey: @"dbname"];
+    [d1 setObject: batchid forKey: @"batchid"];
+    [d1 setObject: flen forKey: @"flen"];
+
+    NSMutableArray * flatlist = [NSMutableArray arrayWithCapacity: 0];
+    [d1 setObject: flatlist forKey: @"flatlist"];
+
+    [batchmap setObject: d1 forKey: batchid];
+}
+
+- (void) batch_part: (NSDictionary *)options
+{
+    NSString * batchid = [options objectForKey: @"batchid"];
+    NSMutableArray * part = [options objectForKey: @"part"];
+    NSLog(@"part for batch id %@ dbname %@", batchid, [[batchmap objectForKey: batchid] objectForKey: @"dbname"]);
+
+    NSMutableDictionary * b2 = [batchmap objectForKey: batchid];
+    NSMutableArray * flatlist = [b2 objectForKey: @"flatlist"];
+    long pl = [part count];
+    for (int ii2=0; ii2<pl; ++ii2)
+        [flatlist addObject: [part objectAtIndex: ii2]];
+}
+
+- (void) batch_run: (NSDictionary *) options cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid
+{
+    NSString * batchid = [options objectForKey: @"batchid"];
+    NSMutableDictionary * b3 = [batchmap objectForKey: batchid];
+    NSString * dbFileName = [b3 objectForKey: @"dbname"];
+    NSMutableArray * flatlist = [b3 objectForKey: @"flatlist"];
+
+    NSMutableDictionary * dbargs = [NSMutableDictionary dictionaryWithCapacity:0];
+    [dbargs setObject: dbFileName forKey: @"dbname"];
+    NSMutableDictionary * o2 = [NSMutableDictionary dictionaryWithCapacity:0];
+    [o2 setObject: dbargs forKey:@"dbargs"];
+    [o2 setObject: [b3 objectForKey: @"flen"] forKey: @"flen"];
+    [o2 setObject: flatlist forKey: @"flatlist"];
+
+    [self sql_batch_dict: o2 cbHandler: cbHandler cbId: cbid];
 }
 
 //-(void) executeSqlBatch: (CDVInvokedUrlCommand*)command

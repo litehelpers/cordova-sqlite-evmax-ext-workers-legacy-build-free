@@ -34,7 +34,13 @@ typedef int WebSQLError;
 
 //-(void) open_dict: (NSDictionary *) dict;
 //-(void) sql_batch_dict: (NSDictionary *) dict;
+
 -(void) open_dict: (NSDictionary *) dict cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid;
+
+- (void) batch_start:(NSDictionary *)options;
+- (void) batch_part:(NSDictionary *)options;
+- (void) batch_run: (NSDictionary *) dict cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid;
+
 -(void) sql_batch_dict: (NSDictionary *) dict cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid;
 
 // Open / Close

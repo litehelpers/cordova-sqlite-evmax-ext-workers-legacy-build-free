@@ -31,7 +31,7 @@ Some **important** pointers:
 - extra logging statements
 - source code changes to the native Android and iOS versions needs some cleanup
 - iOS version does not support access from the main thread or access to the same database from multiple threads
-- If the transaction batch queue grows too big, the Android version will break due to the internal XHR URI limitation. A workaround needs to be implemented.
+- FIXED: ~~If the transaction batch queue grows too big, the Android version will break due to the internal XHR URI limitation. A workaround needs to be implemented.~~
 - The Android version generates ugly "404 (not found)" XHR errors in the debug console.
 
 ## Status
