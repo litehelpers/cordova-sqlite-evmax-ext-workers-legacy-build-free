@@ -375,6 +375,7 @@ static NSMutableDictionary * batchmap = NULL;
 {
     NSString * batchid = [options objectForKey: @"batchid"];
     NSMutableDictionary * b3 = [batchmap objectForKey: batchid];
+    [batchmap removeObjectForKey: batchid];
     NSString * dbFileName = [b3 objectForKey: @"dbname"];
     NSMutableArray * flatlist = [b3 objectForKey: @"flatlist"];
 
