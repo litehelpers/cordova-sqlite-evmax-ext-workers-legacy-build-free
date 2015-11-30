@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    id="cordova-sqlite-worker-test"
+    id="cordova-sqlite-workers-evfree"
     version="0.8.0-pre">
 
-    <name>Cordova sqlite storage - free enterprise version with Android memory fix</name>
+    <name>Cordova sqlite storage - free enterprise version with web worker support</name>
 
     <license>GPL</license>
 
@@ -17,7 +17,7 @@
         <engine name="cordova" version=">=3.3.0" />
     </engines>
 
-    <js-module src="www/SQLitePlugin.js" name="SQLitePlugin">
+    <js-module src="src/www/SQLitePlugin.js" name="SQLitePlugin">
         <clobbers target="SQLitePlugin" />
     </js-module>
 
@@ -59,24 +59,9 @@
         <!-- Note: the ios src is based off src/ios implicitly -->
         <header-file src="src/ios/SQLitePlugin.h" />
         <source-file src="src/ios/SQLitePlugin.m" />
-        <framework src="libsqlite3.dylib" />
 
-    </platform>
-
-    <!-- windows -->
-    <platform name="windows">
-        <js-module src="src/windows/SQLiteProxy.js" name="SQLiteProxy">
-            <merges target="" />
-        </js-module>
-
-        <!-- SQLite3 JS module from SQLite3-WinRT/SQLite3JS: -->
-        <js-module src="src/windows/SQLite3-WinRT/SQLite3JS/js/SQLite3.js" name="SQLite3">
-            <merges target="" />
-        </js-module>
-
-        <!-- Thanks to AllJoyn-Cordova / cordova-plugin-alljoyn: -->
-        <framework src="src/windows/SQLite3-WinRT/SQLite3/SQLite3.Windows/SQLite3.Windows.vcxproj" custom="true" type="projectReference" target="windows" />
-        <framework src="src/windows/SQLite3-WinRT/SQLite3/SQLite3.WindowsPhone/SQLite3.WindowsPhone.vcxproj" custom="true" type="projectReference" target="phone" />
+        <header-file src="src/common/sqlite3.h" />
+        <source-file src="src/common/sqlite3.c" />
 
     </platform>
 
