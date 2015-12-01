@@ -17,14 +17,14 @@ NOTE (TBD): no Circle CI or Travis CI working in this version branch.
 It is *highly* recommended to use the sample application in `sample-worker/www` as a starting point, at least during initial testing.
 
 Some **important** pointers:
-- See `sample-worker/www/index.html`, the `aqmain.js` script must be included before your app Javascript
-- See `sample-worker/www/index.js`: a worker must be registered with a unique name using the `aqregister` function before the worker can have access to the sqlite plugin features
-- See `sample-worker/www/sample-worker.js`: some requirements in the worker script:
-  - The following scripts must be imported: `aqworker.js` and `Worker-SQLitePlugin.js`
+- See `www/sample-index.html`, the `aqmain.js` script must be included before your app Javascript
+- See `www/sample-index.js`: a worker must be registered with a unique name using the `aqregister` function before the worker can have access to the sqlite plugin features
+- See `www/sample-worker.js`: some requirements in the worker script:
+  - The following scripts must be imported: `aqworker.js` and `SQLitePlugin.js`
   - To receive messages from the main thread, please use `self.addEventListener` instead of `self.onmessage`
   - This plugin sends internal string messages starting with `!!!` from the main thread to the worker thread. It is *highly* recommended to filter the messages for your own pattern.
   - Use `sqlitePlugin.openDatabase` instead of `window.sqlitePlugin.openDatabase`
-- To use this plugin in main thread, you must explicitly include `SQLitePlugin.js` from `www`
+- `www/SQLitePlugin.js` is no longer automatically included in the main thread by Cordova.
 
 ## LIMITATIONS and other TODO(s) to be fixed:
 
