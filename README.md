@@ -518,7 +518,6 @@ A posting how to get started developing on Windows host without the Cordova CLI 
 - `sample-worker`: Sample application with web workers support integrated as described above
 - `spec`: test suite using Jasmine (2.2.0), ported from QUnit `test-www` test suite, working on all platforms
 - `tests`: very simple Jasmine test suite that is run on Circle CI (Android version) and Travis CI (iOS version)
-- `workertest`: simple test of web worker support
 - `Lawnchair-adapter`: Lawnchair adaptor, based on the version from the Lawnchair repository, with the basic Lawnchair test suite in `test-www` subdirectory
 
 ## Manual installation - Android version

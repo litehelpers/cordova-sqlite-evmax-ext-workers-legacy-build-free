@@ -15,13 +15,14 @@
 
   <!-- [Cordova] source file(s): -->
   <script src="cordova.js"></script>
-  <!-- Needed for Cordova pre-3.0: -->
-  <script src="SQLitePlugin.js"></script>
+  <!-- Needed to support workers: -->
+  <script src="spec/aqmain.js"></script>
 
   <!-- spec file(s): -->
   <script src="spec/browser-check-startup.js"></script>
   <script src="spec/simple-test.js"></script>
   <script src="spec/begin-tx-test.js"></script>
+  <script src="spec/worker-test.js"></script>
   <script src="spec/legacy.js"></script>
   <script src="spec/big-memory-test.js"></script>
 
