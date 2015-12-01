@@ -30,7 +30,6 @@ Some **important** pointers:
 - it is currently not possible to close or delete a database from a web worker (iOS version, needs to be tested in Android version)
 - extra logging statements
 - source code changes to the native Android and iOS versions needs some cleanup
-- iOS version does not support access from the main thread or access to the same database from multiple threads
 - The Android version generates ugly "404 (not found)" XHR errors in the debug console.
 
 ## Version Status

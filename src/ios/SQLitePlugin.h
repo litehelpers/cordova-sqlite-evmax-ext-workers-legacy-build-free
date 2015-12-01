@@ -30,26 +30,31 @@ typedef int WebSQLError;
 @property (nonatomic, copy) NSMutableDictionary *openDBs;
 @property (nonatomic, copy) NSMutableDictionary *appDBPaths;
 
-//-(void) openaq: (NSString *) name;
-
-//-(void) open_dict: (NSDictionary *) dict;
-//-(void) sql_batch_dict: (NSDictionary *) dict;
-
--(void) open_dict: (NSDictionary *) dict cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid;
-
-- (void) batch_start:(NSDictionary *)options;
-- (void) batch_part:(NSDictionary *)options;
-- (void) batch_run: (NSDictionary *) dict cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid;
-
--(void) sql_batch_dict: (NSDictionary *) dict cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid;
-
 // Open / Close / Delete
+// [Cordova]
 -(void) open: (CDVInvokedUrlCommand*)command;
 -(void) close: (CDVInvokedUrlCommand*)command;
 -(void) delete: (CDVInvokedUrlCommand*)command;
 
+// [aq cb handler]
+- (void) open_dict: (NSDictionary *) dict cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid;
+
+// [common]
+- (id) openWithOptions: (NSDictionary *) options;
+
 // Batch processing interface
+// [Cordova]
 -(void) backgroundExecuteSqlBatch: (CDVInvokedUrlCommand*)command;
 -(void) executeSqlBatch: (CDVInvokedUrlCommand*)command;
+
+// [aq cb handler]
+- (void) batch_start:(NSDictionary *)options;
+- (void) batch_part:(NSDictionary *)options;
+- (void) batch_run: (NSDictionary *) dict cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid;
+
+- (void) sql_batch_dict: (NSDictionary *) dict cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid;
+
+// [common]
+- (id) sqlBatchWithOptions: (NSDictionary *) options;
 
 @end /* vim: set expandtab : */

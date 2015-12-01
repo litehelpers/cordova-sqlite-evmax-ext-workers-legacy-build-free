@@ -190,17 +190,30 @@ static NSMutableDictionary * batchmap = NULL;
 
 -(void)open: (CDVInvokedUrlCommand*)command
 {
-    CDVPluginResult* pluginResult = nil;
-    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Database opened"];
+    NSMutableDictionary *options = [command.arguments objectAtIndex:0];
+
+    // expected to be NSString:
+    NSString * res = [self openWithOptions: options];
+
+    // XXX TODO fix error handling:
+    CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString: res];
+
     [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
 }
 
-//-(void)open: (CDVInvokedUrlCommand*)command
--(void) open_dict: (NSDictionary *) options cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid
+- (void) open_dict: (NSDictionary *) dict cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid
 {
-    CDVPluginResult* pluginResult = nil;
-    //NSMutableDictionary *options = [command.arguments objectAtIndex:0];
+    // expected to be NSString:
+    NSObject * res = [self openWithOptions: dict];
 
+    // XXX TODO fix error handling
+    NSString * myScript = [NSString stringWithFormat:@"%@('%@', '%@?%@');", @"aqcallback", cbHandler, cbid, res];
+    NSLog(@"dispatch Javascript: %@", myScript);
+    [webView stringByEvaluatingJavaScriptFromString: myScript];
+}
+
+- (id) openWithOptions: (NSDictionary *) options
+{
     NSString *dbfilename = [options objectForKey:@"name"];
 
     NSString *dblocation = [options objectForKey:@"dblocation"];
@@ -212,14 +225,18 @@ static NSMutableDictionary * batchmap = NULL;
 
     if (dbname == NULL) {
         NSLog(@"No db name specified for open");
+
         //pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"You must specify database name"];
+        return @"ERROR";
     }
     else {
         NSValue *dbPointer = [openDBs objectForKey:dbfilename];
 
         if (dbPointer != NULL) {
             NSLog(@"Reusing existing database connection for db name %@", dbfilename);
+
             //pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"Database opened"];
+            return @"a1";
         } else {
             const char *name = [dbname UTF8String];
             sqlite3 *db;
@@ -229,7 +246,7 @@ static NSMutableDictionary * batchmap = NULL;
             if (sqlite3_open(name, &db) != SQLITE_OK) {
                 NSLog(@"open db ERROR");
                 //pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Unable to open DB"];
-                return;
+                return @"ERROR";
             } else {
                 // for SQLCipher version:
                 // NSString *dbkey = [options objectForKey:@"key"];
@@ -242,19 +259,19 @@ static NSMutableDictionary * batchmap = NULL;
                     dbPointer = [NSValue valueWithPointer:db];
                     [openDBs setObject: dbPointer forKey: dbfilename];
                     //pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"a1"];
-
-                    NSString * myScript = [NSString stringWithFormat:@"%@('%@', '%@?%@');", @"aqcallback", cbHandler, cbid, @"a1"];
-                    NSLog(@"dispatch Javascript: %@", myScript);
-                    [webView stringByEvaluatingJavaScriptFromString: myScript];
-
+                    return @"a1";
                 } else {
                     //pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Unable to open DB with key"];
+
                     // XXX TODO: close the db handle & [perhaps] remove from openDBs!!
+
+                    return @"ERROR";
                 }
             }
         }
     }
 
+#if 0 // XXX FUTURE TBD check:
     if (sqlite3_threadsafe()) {
         NSLog(@"Good news: SQLite is thread safe!");
     }
@@ -265,6 +282,7 @@ static NSMutableDictionary * batchmap = NULL;
     //[self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
 
     // NSLog(@"open cb finished ok");
+#endif
 }
 
 
@@ -342,9 +360,6 @@ static NSMutableDictionary * batchmap = NULL;
     NSMutableDictionary *dbargs = [options objectForKey:@"dbargs"];
     NSString * batchid = [options objectForKey: @"batchid"];
     NSNumber *flen = [options objectForKey:@"flen"];
-    //NSMutableArray *flatlist = [options objectForKey:@"flatlist"];
-    //int sc = [flen integerValue];
-    //NSLog(@"sc: %d", sc);
 
     NSString *dbFileName = [dbargs objectForKey:@"dbname"];
     NSMutableDictionary * d1 = [NSMutableDictionary dictionaryWithCapacity: 0];
@@ -389,44 +404,21 @@ static NSMutableDictionary * batchmap = NULL;
     [self sql_batch_dict: o2 cbHandler: cbHandler cbId: cbid];
 }
 
-//-(void) executeSqlBatch: (CDVInvokedUrlCommand*)command
-- (void) sql_batch_dict:(NSDictionary *)options cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid
+-(void) executeSqlBatch: (CDVInvokedUrlCommand*)command
 {
-NSLog(@"sb1");
-    //NSMutableDictionary *options = [command.arguments objectAtIndex:0];
-    NSMutableArray *results = [NSMutableArray arrayWithCapacity:0];
-    NSMutableDictionary *dbargs = [options objectForKey:@"dbargs"];
-    NSNumber *flen = [options objectForKey:@"flen"];
-    NSMutableArray *flatlist = [options objectForKey:@"flatlist"];
-    int sc = [flen integerValue];
-    //NSLog(@"sc: %d", sc);
+    NSMutableDictionary *options = [command.arguments objectAtIndex:0];
 
-    NSString *dbFileName = [dbargs objectForKey:@"dbname"];
+    // expected to be NSMutableArray:
+    NSMutableArray * results = [self sqlBatchWithOptions: options];
 
-    //CDVPluginResult* pluginResult;
+    CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:results];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
 
-    int ai = 0;
-
-    @synchronized(self) {
-        for (int i=0; i<sc; ++i) {
-            //NSLog(@"sb2");
-            NSString *sql = [flatlist objectAtIndex:(ai++)];
-            //NSLog(@"sql: %@", sql);
-            NSNumber *pc = [flatlist objectAtIndex:(ai++)];
-            //NSLog(@"pc: %@", pc);
-            int params_count = [pc integerValue];
-
-            [self executeSql:sql withParams:flatlist first:ai count:params_count onDatabaseName:dbFileName results:results];
-            ai += params_count;
-        }
-
-        //pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:results];
-    }
-
-    //[self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-
-    //NSLog(@"sb3");
-    //NSLog(@"results length: %lu", [results count]);
+- (void) sql_batch_dict:(NSDictionary *) dict cbHandler: (NSString *) cbHandler cbId: (NSString *) cbid
+{
+    // expected to be NSMutableArray:
+    NSMutableArray * results = [self sqlBatchWithOptions: dict];
 
     NSError * e = nil;
     NSData * da = [NSJSONSerialization dataWithJSONObject:results options:kNilOptions error:&e];
@@ -440,6 +432,32 @@ NSLog(@"sb1");
     NSString * myScript = [NSString stringWithFormat:@"%@('%@', \"%@?%@\");", @"aqcallback", cbHandler, cbid, ur];
     NSLog(@"dispatch Javascript: %@", myScript);
     [webView stringByEvaluatingJavaScriptFromString: myScript];
+}
+
+- (id) sqlBatchWithOptions: (NSDictionary *) options
+{
+    NSMutableArray *results = [NSMutableArray arrayWithCapacity:0];
+    NSMutableDictionary *dbargs = [options objectForKey:@"dbargs"];
+    NSNumber *flen = [options objectForKey:@"flen"];
+    NSMutableArray *flatlist = [options objectForKey:@"flatlist"];
+    int sc = [flen integerValue];
+
+    NSString *dbFileName = [dbargs objectForKey:@"dbname"];
+
+    int ai = 0;
+
+    @synchronized(self) {
+        for (int i=0; i<sc; ++i) {
+            NSString *sql = [flatlist objectAtIndex:(ai++)];
+            NSNumber *pc = [flatlist objectAtIndex:(ai++)];
+            int params_count = [pc integerValue];
+
+            [self executeSql:sql withParams:flatlist first:ai count:params_count onDatabaseName:dbFileName results:results];
+            ai += params_count;
+        }
+    }
+
+    return results;
 }
 
 -(void)executeSql: (NSString*)sql withParams: (NSMutableArray*)params first: (int)first count:(int)params_count onDatabaseName: (NSString*)dbFileName results: (NSMutableArray*)results
