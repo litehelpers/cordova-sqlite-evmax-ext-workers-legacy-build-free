@@ -27,6 +27,13 @@
     ###
     MAX_SQL_CHUNK = 0
 
+    MAX_PART_SIZE = 100
+
+    try
+      isWorker = !!aqsetcbprefix and !!aqrequest
+    catch err
+      # do nothing
+
 ## global(s):
 
     # per-db map of locking and queueing
@@ -38,8 +45,11 @@
     # XXX TBD this will be renamed and include some more per-db state.
     txLocks = {}
 
-    # Indicate if the platform implementation (Android) requires flat JSON interface
+    # XXX NOTE: NEVER expected to be false for a database in this version, TBD remove:
     useflatjson = false
+
+    if isWorker
+      aqsetcbprefix 'sqlcb'
 
 ## utility functions:
 
@@ -66,7 +76,11 @@
 
       return sqlError
 
-    nextTick = window.setImmediate || (fun) ->
+    nextTick = if isWorker then (fun) ->
+      # XXX FUTURE TBD use setImmediate (??)
+      setTimeout(fun, 0)
+      return
+    else window.setImmediate || (fun) ->
       window.setTimeout(fun, 0)
       return
 
@@ -274,7 +288,14 @@
         # store initial DB state:
         @openDBs[@dbname] = DB_STATE_INIT
 
-        cordova.exec opensuccesscb, openerrorcb, "SQLitePlugin", "open", [ @openargs ]
+        if isWorker
+          aqrequest 'sq', 'open', (encodeURIComponent (JSON.stringify [@openargs])), (s) ->
+            if s == 'a1'
+              opensuccesscb s
+            else
+              openerrorcb()
+        else
+          cordova.exec opensuccesscb, openerrorcb, "SQLitePlugin", "open", [ @openargs ]
 
       return
 
@@ -502,14 +523,13 @@
 
           return
 
-      if useflatjson
-        @run_batch_flatjson batchExecutes, handlerFor
-      else
-        @run_batch batchExecutes, handlerFor
+      @run_batch batchExecutes, handlerFor
+
       return
 
-    # version for Android and iOS (with flat JSON interface)
-    SQLitePluginTransaction::run_batch_flatjson = (batchExecutes, handlerFor) ->
+    batchid = 0
+
+    SQLitePluginTransaction::run_batch = (batchExecutes, handlerFor) ->
       flatlist = []
       mycbmap = {}
 
@@ -590,51 +610,46 @@
 
         return
 
-      cordova.exec mycb, null, "SQLitePlugin", "backgroundExecuteSqlBatch",
-        [{dbargs: {dbname: @db.dbname}, flen: batchExecutes.length, flatlist: flatlist}]
+      if isWorker
+        ++batchid
+        batchname = aqcbhandlername + '.' + batchid
+        rem = flatlist
+        flatlist = null
+        aqrequest 'sq', 'batchStart', encodeURIComponent(JSON.stringify([ {
+          dbargs: dbname: @db.dbname
+          batchid: batchname
+          flen: batchExecutes.length
+        } ])), (s) -> return #self.postMessage 'got batchStart response'
 
-      return
+        k = 0
+        partid = 0
+        while rem.length > 0
+          rlength = rem.length
+          pl = if rlength > MAX_PART_SIZE then MAX_PART_SIZE else rlength
+          part = rem.slice(0, pl)
+          rem = rem.slice(pl)
+          console.log 'part: ' + JSON.stringify(part)
+          console.log 'rem: ' + JSON.stringify(rem)
+          aqrequest 'sq', 'batchPart', encodeURIComponent(JSON.stringify([ {
+            batchid: batchname
+            partid: ++partid
+            flen: batchExecutes.length
+            part: part
+          } ])), (s) -> return #self.postMessage('got batchStart response')
 
-    # version for other platforms
-    SQLitePluginTransaction::run_batch = (batchExecutes, handlerFor) ->
-      tropts = []
-      mycbmap = {}
+        aqrequest 'sq', 'batchRun', encodeURIComponent(JSON.stringify([ { batchid: batchname } ])), (s) ->
+          #self.postMessage 'got sql response'
+          #self.postMessage 'sql response s: ' + s
+          json = decodeURIComponent(s)
+          #self.postMessage('sql json response: ' + json
+          res = JSON.parse(json)
+          #self.postMessage 'sql response object: ' + JSON.stringify(res)
+          mycb res
+          return
 
-      i = 0
-      while i < batchExecutes.length
-        request = batchExecutes[i]
-
-        mycbmap[i] =
-          success: handlerFor(i, true)
-          error: handlerFor(i, false)
-
-        tropts.push
-          qid: 1111
-          sql: request.sql
-          params: request.params
-
-        i++
-
-      mycb = (result) ->
-        i = 0
-        reslength = result.length
-        while i < reslength
-          r = result[i]
-          type = r.type
-          # NOTE: r.qid ignored (if present)
-          res = r.result
-
-          q = mycbmap[i]
-
-          if q
-            if q[type]
-              q[type] res
-
-          ++i
-
-        return
-
-      cordova.exec mycb, null, "SQLitePlugin", "backgroundExecuteSqlBatch", [{dbargs: {dbname: @db.dbname}, executes: tropts}]
+      else
+        cordova.exec mycb, null, "SQLitePlugin", "backgroundExecuteSqlBatch",
+          [{dbargs: {dbname: @db.dbname}, flen: batchExecutes.length, flatlist: flatlist}]
 
       return
 

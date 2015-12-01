@@ -4,7 +4,7 @@ Contact for commercial license: info@litehelpers.net
  */
 
 (function() {
-  var DB_STATE_INIT, DB_STATE_OPEN, MAX_SQL_CHUNK, READ_ONLY_REGEX, SQLiteFactory, SQLitePlugin, SQLitePluginTransaction, argsArray, dblocations, newSQLError, nextTick, root, txLocks, useflatjson;
+  var DB_STATE_INIT, DB_STATE_OPEN, MAX_PART_SIZE, MAX_SQL_CHUNK, READ_ONLY_REGEX, SQLiteFactory, SQLitePlugin, SQLitePluginTransaction, argsArray, batchid, dblocations, err, error1, isWorker, newSQLError, nextTick, root, txLocks, useflatjson;
 
   root = this;
 
@@ -22,14 +22,21 @@ Contact for commercial license: info@litehelpers.net
 
   MAX_SQL_CHUNK = 0;
 
-  var MAX_PART_SIZE = 1;
+  MAX_PART_SIZE = 1;
+
+  try {
+    isWorker = !!aqsetcbprefix && !!aqrequest;
+  } catch (error1) {
+    err = error1;
+  }
 
   txLocks = {};
 
   useflatjson = false;
 
-  aqsetcbprefix('sqlcb');
-
+  if (isWorker) {
+    aqsetcbprefix('sqlcb');
+  }
 
   newSQLError = function(error, code) {
     var sqlError;
@@ -55,9 +62,10 @@ Contact for commercial license: info@litehelpers.net
     return sqlError;
   };
 
-  nextTick = /* window.setImmediate || */ function(fun) {
-    //window.setTimeout(fun, 0);
+  nextTick = isWorker ? function(fun) {
     setTimeout(fun, 0);
+  } : window.setImmediate || function(fun) {
+    window.setTimeout(fun, 0);
   };
 
 
@@ -159,7 +167,7 @@ Contact for commercial license: info@litehelpers.net
       error(newSQLError('database not open'));
       return;
     }
-    this.addTransaction(new SQLitePluginTransaction(this, fn, error, success, true, true));
+    this.addTransaction(new SQLitePluginTransaction(this, fn, error, success, false, true));
   };
 
   SQLitePlugin.prototype.startNextTransaction = function() {
@@ -243,11 +251,17 @@ Contact for commercial license: info@litehelpers.net
         };
       })(this);
       this.openDBs[this.dbname] = DB_STATE_INIT;
-      //cordova.exec(opensuccesscb, openerrorcb, "SQLitePlugin", "open", [this.openargs]);
-      aqrequest('sq', 'open', encodeURIComponent(JSON.stringify([this.openargs])), function(s) {
-        if (s === 'a1') opensuccesscb(s);
-        else openerrorcb();
-      });
+      if (isWorker) {
+        aqrequest('sq', 'open', encodeURIComponent(JSON.stringify([this.openargs])), function(s) {
+          if (s === 'a1') {
+            return opensuccesscb(s);
+          } else {
+            return openerrorcb();
+          }
+        });
+      } else {
+        cordova.exec(opensuccesscb, openerrorcb, "SQLitePlugin", "open", [this.openargs]);
+      }
     }
   };
 
@@ -326,14 +340,14 @@ Contact for commercial license: info@litehelpers.net
   };
 
   SQLitePluginTransaction.prototype.start = function() {
-    var err;
+    var error2;
     try {
       this.fn(this);
       if (this.executes.length > 0) {
         this.run();
       }
-    } catch (_error) {
-      err = _error;
+    } catch (error2) {
+      err = error2;
       txLocks[this.db.dbname].inProgress = false;
       this.db.startNextTransaction();
       if (this.error) {
@@ -372,8 +386,11 @@ Contact for commercial license: info@litehelpers.net
     this.error = error;
     if (this.isPaused) {
       this.isPaused = false;
-      if (this.executes.length === 0) this.$finish();
-      else this.run();
+      if (this.executes.length === 0) {
+        this.$finish();
+      } else {
+        this.run();
+      }
     }
   };
 
@@ -386,7 +403,7 @@ Contact for commercial license: info@litehelpers.net
     this.addStatement('INVALID STATEMENT', [], null, null);
     if (this.isPaused) {
       this.isPaused = false;
-      return this.run();
+      this.run();
     }
   };
 
@@ -448,18 +465,20 @@ Contact for commercial license: info@litehelpers.net
     tx = this;
     handlerFor = function(index, didSucceed) {
       return function(response) {
-        var err, sqlError;
+        var error2, sqlError;
         try {
           if (didSucceed) {
             tx.handleStatementSuccess(batchExecutes[index].success, response);
           } else {
             sqlError = newSQLError(response);
-            sqlError.code = response.result.code;
-            sqlError.sqliteCode = response.result.sqliteCode;
+            if (!!response.result) {
+              sqlError.code = response.result.code;
+              sqlError.sqliteCode = response.result.sqliteCode;
+            }
             tx.handleStatementFailure(batchExecutes[index].error, sqlError);
           }
-        } catch (_error) {
-          err = _error;
+        } catch (error2) {
+          err = error2;
           if (!txFailure) {
             txFailure = newSQLError(err);
           }
@@ -477,17 +496,13 @@ Contact for commercial license: info@litehelpers.net
         }
       };
     };
-    if (useflatjson) {
-      this.run_batch_flatjson(batchExecutes, handlerFor);
-    } else {
-      this.run_batch(batchExecutes, handlerFor);
-    }
+    this.run_batch(batchExecutes, handlerFor);
   };
 
-  var batchid = 0;
+  batchid = 0;
 
-  SQLitePluginTransaction.prototype.run_batch_flatjson = function(batchExecutes, handlerFor) {
-    var flatlist, i, l, len1, mycb, mycbmap, p, ref, request;
+  SQLitePluginTransaction.prototype.run_batch = function(batchExecutes, handlerFor) {
+    var batchname, flatlist, i, k, l, len1, mycb, mycbmap, p, part, partid, pl, ref, rem, request, rlength;
     flatlist = [];
     mycbmap = {};
     i = 0;
@@ -570,134 +585,59 @@ Contact for commercial license: info@litehelpers.net
         ++i;
       }
     };
-
-    // XXX TBD check for empty batch?
-
-    console.log('send flatlist: ' + JSON.stringify(flatlist));
-
-    ++batchid;
-    var batchname = aqcbhandlername + '.' + batchid;
-
-    var rem = flatlist;
-    flatlist = null;
-
-    aqrequest('sq', 'batchStart', encodeURIComponent(JSON.stringify([
-      {
-        dbargs: {
-          dbname: this.db.dbname
-        },
-        batchid: batchname,
-        flen: batchExecutes.length,
-        //flatlist: flatlist
-      }
-    ])), function(s) {
-      //self.postMessage('got batchStart response');
-    });
-
-    var k = 0;
-    var partid = 0;
-
-    while (rem.length > 0) {
-    var rlength = rem.length;
-    var pl = (rlength > MAX_PART_SIZE) ? MAX_PART_SIZE : rlength;
-    var part = rem.slice(0, pl);
-    rem = rem.slice(pl);
-    console.log('part: ' + JSON.stringify(part));
-    console.log('rem: ' + JSON.stringify(rem));
-
-    aqrequest('sq', 'batchPart', encodeURIComponent(JSON.stringify([
-      {
-        batchid: batchname,
-        partid: ++partid,
-        flen: batchExecutes.length,
-        part: part
-      }
-    ])), function(s) {
-      //self.postMessage('got batchStart response');
-    });
-
-    }
-
-    aqrequest('sq', 'batchRun', encodeURIComponent(JSON.stringify([
-      {
-        batchid: batchname,
-      }
-    ])), function(s) {
-      //self.postMessage('got sql response');
-      //self.postMessage('sql response s: ' + s);
-      var json = decodeURIComponent(s);
-      //self.postMessage('sql json response: ' + json);
-      var res = JSON.parse(json);
-      //self.postMessage('sql response object: ' + JSON.stringify(res));
-      mycb(res);
-    });
-
-    return;
-
-    //cordova.exec(mycb, null, "SQLitePlugin", "backgroundExecuteSqlBatch", [
-    aqrequest('sq', 'backgroundExecuteSqlBatch', encodeURIComponent(JSON.stringify([
-      {
-        dbargs: {
-          dbname: this.db.dbname
-        },
-        flen: batchExecutes.length,
-        flatlist: flatlist
-      }
-    ])), function(s) {
-      //self.postMessage('got sql response');
-      //self.postMessage('sql response s: ' + s);
-      var json = decodeURIComponent(s);
-      //self.postMessage('sql json response: ' + json);
-      var res = JSON.parse(json);
-      //self.postMessage('sql response object: ' + JSON.stringify(res));
-      mycb(res);
-    });
-    //]);
-  };
-
-  SQLitePluginTransaction.prototype.run_batch = function(batchExecutes, handlerFor) {
-    var i, mycb, mycbmap, request, tropts;
-    tropts = [];
-    mycbmap = {};
-    i = 0;
-    while (i < batchExecutes.length) {
-      request = batchExecutes[i];
-      mycbmap[i] = {
-        success: handlerFor(i, true),
-        error: handlerFor(i, false)
-      };
-      tropts.push({
-        qid: 1111,
-        sql: request.sql,
-        params: request.params
-      });
-      i++;
-    }
-    mycb = function(result) {
-      var q, r, res, reslength, type;
-      i = 0;
-      reslength = result.length;
-      while (i < reslength) {
-        r = result[i];
-        type = r.type;
-        res = r.result;
-        q = mycbmap[i];
-        if (q) {
-          if (q[type]) {
-            q[type](res);
-          }
+    if (isWorker) {
+      ++batchid;
+      batchname = aqcbhandlername + '.' + batchid;
+      rem = flatlist;
+      flatlist = null;
+      aqrequest('sq', 'batchStart', encodeURIComponent(JSON.stringify([
+        {
+          dbargs: {
+            dbname: this.db.dbname
+          },
+          batchid: batchname,
+          flen: batchExecutes.length
         }
-        ++i;
+      ])), function(s) {});
+      k = 0;
+      partid = 0;
+      while (rem.length > 0) {
+        rlength = rem.length;
+        pl = rlength > MAX_PART_SIZE ? MAX_PART_SIZE : rlength;
+        part = rem.slice(0, pl);
+        rem = rem.slice(pl);
+        console.log('part: ' + JSON.stringify(part));
+        console.log('rem: ' + JSON.stringify(rem));
+        aqrequest('sq', 'batchPart', encodeURIComponent(JSON.stringify([
+          {
+            batchid: batchname,
+            partid: ++partid,
+            flen: batchExecutes.length,
+            part: part
+          }
+        ])), function(s) {});
       }
-    };
-    cordova.exec(mycb, null, "SQLitePlugin", "backgroundExecuteSqlBatch", [
-      {
-        dbargs: {
-          dbname: this.db.dbname
-        },
-        executes: tropts
-      }
-    ]);
+      aqrequest('sq', 'batchRun', encodeURIComponent(JSON.stringify([
+        {
+          batchid: batchname
+        }
+      ])), function(s) {
+        var json, res;
+        json = decodeURIComponent(s);
+        res = JSON.parse(json);
+        mycb(res);
+      });
+    } else {
+      cordova.exec(mycb, null, "SQLitePlugin", "backgroundExecuteSqlBatch", [
+        {
+          dbargs: {
+            dbname: this.db.dbname
+          },
+          flen: batchExecutes.length,
+          flatlist: flatlist
+        }
+      ]);
+    }
   };
 
   SQLitePluginTransaction.prototype.$abort = function(txFailure) {
