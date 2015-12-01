@@ -1,6 +1,6 @@
 # Cordova/PhoneGap sqlite storage - free enterprise version with web worker test
  
-Test release with *very basic* support web workers in `sample-worker/www` (test in `workertest/www`) for Android and iOS *ONLY*.
+Test release with *very basic* support web workers in `sample-worker/www` for Android and iOS *ONLY*.
 
 Native interface to sqlite in a Cordova/PhoneGap plugin for Android and iOS with API similar to HTML5/[Web SQL API](http://www.w3.org/TR/webdatabase/).
 
@@ -24,6 +24,7 @@ Some **important** pointers:
   - To receive messages from the main thread, please use `self.addEventListener` instead of `self.onmessage`
   - This plugin sends internal string messages starting with `!!!` from the main thread to the worker thread. It is *highly* recommended to filter the messages for your own pattern.
   - Use `sqlitePlugin.openDatabase` instead of `window.sqlitePlugin.openDatabase`
+- To use this plugin in main thread, you must explicitly include `SQLitePlugin.js` from `www`
 
 ## LIMITATIONS and other TODO(s) to be fixed:
 
@@ -514,10 +515,11 @@ A posting how to get started developing on Windows host without the Cordova CLI 
    - `external` - placeholder for external dependencies - *not required in this version*
    - `android` - Java plugin code for Android
    - `ios` - Objective-C plugin code for iOS
-   - `www` - `SQLitePlugin.js` platform-independent Javascript as generated from `SQLitePlugin.coffee.md` (and checked in!)
+   - `www` - `SQLitePluginHelper.js` to provide Cordova `exec` access for `SQLitePlugin.js`
 - `sample-worker`: Sample application with web workers support integrated as described above
 - `spec`: test suite using Jasmine (2.2.0), ported from QUnit `test-www` test suite, working on all platforms
 - `tests`: very simple Jasmine test suite that is run on Circle CI (Android version) and Travis CI (iOS version)
+- `www`: `SQLitePlugin.js` platform-independent Javascript as generated from `SQLitePlugin.coffee.md` (and checked in!)
 - `Lawnchair-adapter`: Lawnchair adaptor, based on the version from the Lawnchair repository, with the basic Lawnchair test suite in `test-www` subdirectory
 
 ## Manual installation - Android version

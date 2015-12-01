@@ -29,12 +29,12 @@
 
     MAX_PART_SIZE = 100
 
+## global(s):
+
     try
       isWorker = !!aqsetcbprefix and !!aqrequest
     catch err
       # do nothing
-
-## global(s):
 
     # per-db map of locking and queueing
     # XXX NOTE: This is NOT cleaned up when a db is closed and/or deleted.
@@ -295,7 +295,7 @@
             else
               openerrorcb()
         else
-          cordova.exec opensuccesscb, openerrorcb, "SQLitePlugin", "open", [ @openargs ]
+          root.sqlitePluginHelper.exec 'open', [ @openargs ], opensuccesscb, openerrorcb
 
       return
 
@@ -317,7 +317,7 @@
 
         # XXX [BUG #210] TODO: when closing or deleting a db, abort any pending transactions [and test it!!]
 
-        cordova.exec success, error, "SQLitePlugin", "close", [ { path: @dbname } ]
+        root.sqlitePluginHelper.exec 'close', [ { path: @dbname } ], success, error
 
       else
         console.log 'cannot close: database is not open'
@@ -648,8 +648,9 @@
           return
 
       else
-        cordova.exec mycb, null, "SQLitePlugin", "backgroundExecuteSqlBatch",
-          [{dbargs: {dbname: @db.dbname}, flen: batchExecutes.length, flatlist: flatlist}]
+        root.sqlitePluginHelper.exec 'backgroundExecuteSqlBatch',
+          [{dbargs: {dbname: @db.dbname}, flen: batchExecutes.length, flatlist: flatlist}],
+          mycb, null
 
       return
 
@@ -769,7 +770,9 @@
 
         # XXX [BUG #210] TODO: when closing or deleting a db, abort any pending transactions (with error callback)
         delete SQLitePlugin::openDBs[args.path]
-        cordova.exec success, error, "SQLitePlugin", "delete", [ args ]
+        root.sqlitePluginHelper.exec 'delete', [ args ], success, error
+
+        return
 
 ## Exported API:
 

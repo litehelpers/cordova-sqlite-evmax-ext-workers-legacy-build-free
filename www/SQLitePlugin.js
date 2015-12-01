@@ -260,7 +260,7 @@ Contact for commercial license: info@litehelpers.net
           }
         });
       } else {
-        cordova.exec(opensuccesscb, openerrorcb, "SQLitePlugin", "open", [this.openargs]);
+        root.sqlitePluginHelper.exec('open', [this.openargs], opensuccesscb, openerrorcb);
       }
     }
   };
@@ -279,11 +279,11 @@ Contact for commercial license: info@litehelpers.net
       } else {
         console.log('closing db with no transaction lock state');
       }
-      cordova.exec(success, error, "SQLitePlugin", "close", [
+      root.sqlitePluginHelper.exec('close', [
         {
           path: this.dbname
         }
-      ]);
+      ], success, error);
     } else {
       console.log('cannot close: database is not open');
       if (error) {
@@ -628,7 +628,7 @@ Contact for commercial license: info@litehelpers.net
         mycb(res);
       });
     } else {
-      cordova.exec(mycb, null, "SQLitePlugin", "backgroundExecuteSqlBatch", [
+      root.sqlitePluginHelper.exec('backgroundExecuteSqlBatch', [
         {
           dbargs: {
             dbname: this.db.dbname
@@ -636,7 +636,7 @@ Contact for commercial license: info@litehelpers.net
           flen: batchExecutes.length,
           flatlist: flatlist
         }
-      ]);
+      ], mycb, null);
     }
   };
 
@@ -761,7 +761,7 @@ Contact for commercial license: info@litehelpers.net
         args.dblocation = dblocation || dblocations[0];
       }
       delete SQLitePlugin.prototype.openDBs[args.path];
-      return cordova.exec(success, error, "SQLitePlugin", "delete", [args]);
+      root.sqlitePluginHelper.exec('delete', [args], success, error);
     }
   };
 

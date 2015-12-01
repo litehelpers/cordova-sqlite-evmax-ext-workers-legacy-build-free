@@ -17,7 +17,7 @@
         <engine name="cordova" version=">=3.3.0" />
     </engines>
 
-    <js-module src="src/www/SQLitePlugin.js" name="SQLitePlugin">
+    <js-module src="src/www/SQLitePluginHelper.js" name="SQLitePlugin">
         <clobbers target="SQLitePlugin" />
     </js-module>
 
