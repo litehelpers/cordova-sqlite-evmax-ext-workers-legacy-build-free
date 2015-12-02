@@ -11,17 +11,23 @@ package io.liteglue;
 
 import android.annotation.SuppressLint;
 
+import android.net.Uri;
+
 import android.util.Log;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+
 import java.lang.IllegalArgumentException;
 import java.lang.Number;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaResourceApi;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -50,9 +56,11 @@ public class SQLitePlugin extends CordovaPlugin {
      */
 
     @Override
-    public Boolean shouldAllowRequest(String url) {
+    public Uri remapUri(Uri uri) {
         Log.i("info", "*************** AQS URL");
         Log.i("info", "***************************************");
+
+        String url = uri.toString();
 
         if (url.startsWith("aqaq", 0) || url.startsWith("file:///aq", 0)) {
             Log.i("info", "**** url match: " + url);
@@ -180,16 +188,26 @@ public class SQLitePlugin extends CordovaPlugin {
                     public void error(String s) {
                         webView.sendJavascript("aqcallback('error with string: " + s + "')");
                     }
-
                 });
+            } catch(Exception e) {
+                return null;
+            }
 
-            } catch(Exception e) {}
-            return false;
+            // Trigger handleOpenForRead in order to avoid 404 message in debug console
+            return toPluginUri(uri);
         }
 
-        return true;
+        return null;
     }
 
+    @Override
+    public CordovaResourceApi.OpenForReadResult handleOpenForRead(Uri uri) throws java.io.IOException {
+        Log.i("info", "***************************************");
+        Log.i("info", "*************** AQS handleOpenForRead");
+        Log.i("info", "handleOpenForRead: " + uri.toString());
+
+        return new CordovaResourceApi.OpenForReadResult(uri, new ByteArrayInputStream(new byte[0]), "a", 0, null);
+    }
 
     /**
      * Executes the request and returns PluginResult.
