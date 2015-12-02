@@ -1,6 +1,6 @@
 # Cordova/PhoneGap sqlite storage - free enterprise version with web worker test
  
-Test release with *very basic* support web workers in `sample-worker/www` for Android and iOS *ONLY*.
+Test release with *very basic* support for web workers ~~in `sample-worker/www`~~ _www_ for Android and iOS *ONLY*.
 
 Native interface to sqlite in a Cordova/PhoneGap plugin for Android and iOS with API similar to HTML5/[Web SQL API](http://www.w3.org/TR/webdatabase/).
 
@@ -12,13 +12,15 @@ NOTE (TBD): no Circle CI or Travis CI working in this version branch.
 
 - XHR URI request mechanism needs a secret code mechanism, like they have in the Cordova framework
 
+TBD NOTE (only an issue if app loads external content)
+
 ## Usage in web worker(s)
 
-It is *highly* recommended to use the sample application in `sample-worker/www` as a starting point, at least during initial testing.
+It is *highly* recommended to use the sample application ~~in `sample-worker/www`~~ _www_ as a starting point, at least during initial testing.
 
 Some **important** pointers:
 - See `www/sample-index.html`, the `aqmain.js` script must be included before your app Javascript
-- See `www/sample-index.js`: a worker must be registered with a unique name using the `aqregister` function before the worker can have access to the sqlite plugin features
+- See `www/sample-index.js`: a worker must be registered with a unique name **with no special characters** (TBD: specify which ones) using the `aqregister` function before the worker can have access to the sqlite plugin features
 - See `www/sample-worker.js`: some requirements in the worker script:
   - The following scripts must be imported: `aqworker.js` and `SQLitePlugin.js`
   - To receive messages from the main thread, please use `self.addEventListener` instead of `self.onmessage`
@@ -35,8 +37,11 @@ Some **important** pointers:
 
 ## Version Status
 
-- Major modifications to support web workers
+- Major modifications _have been made to_ to support web workers
 - Certain features described below may be partially or completely broken
+
+TBD test:
+- Very large transaction in a web worker
 
 ## Other Status
 
@@ -80,7 +85,7 @@ TBD
 
 - A stability issue was reported on the iOS version when in use together with [SockJS](http://sockjs.org/) client such as [pusher-js](https://github.com/pusher/pusher-js) at the same time. The workaround is to call sqlite functions and [SockJS](http://sockjs.org/) client functions in separate ticks (using setTimeout with 0 timeout).
 - If a sql statement fails for which there is no error handler or the error handler does not return `false` to signal transaction recovery, the plugin fires the remaining sql callbacks before aborting the transaction.
-- In case of an error, the error `code` member is bogus on Android and Windows (fixed for Android in [litehelpers / Cordova-sqlite-enterprise-free](https://github.com/litehelpers/Cordova-sqlite-enterprise-free)).
+- ~~In case of an error, the error `code` member is bogus on Android and Windows (fixed for Android in [litehelpers / Cordova-sqlite-enterprise-free](https://github.com/litehelpers/Cordova-sqlite-enterprise-free)).~~
 - Possible crash on Android when using Unicode emoji characters due to [Android bug 81341](https://code.google.com/p/android/issues/detail?id=81341), which _should_ be fixed in Android 6.x
 - Close database bugs described below.
 - When a database is opened and deleted without closing, the iOS version is known to leak resources.
@@ -130,6 +135,7 @@ TBD
 
 ### Other versions
 
+- TBD [litehelpers / Cordova-sqlite-enterprise-free](https://github.com/litehelpers/Cordova-sqlite-enterprise-free) ...
 - [litehelpers / Cordova-sqlite-storage](https://github.com/litehelpers/Cordova-sqlite-storage) - Cordova sqlite storage plugin with permissive licensing terms, supported for more platforms.
 - [litehelpers / Cordova-sqlcipher-adapter](https://github.com/litehelpers/Cordova-sqlcipher-adapter) - supports [SQLCipher](https://www.zetetic.net/sqlcipher/) for Android, iOS, and Windows (8.1)
 - Adaptation for React Native Android and iOS: [andpor / react-native-sqlite-storage](https://github.com/andpor/react-native-sqlite-storage)

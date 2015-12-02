@@ -29,15 +29,29 @@ var mytests = function() {
         }
       }
 
-      if (!isWebSql)
-        it(suiteName + 'worker [multi-part tx] test', function(done) {
+      it(suiteName + 'worker string test',
+        function(done) {
+
+          var w = new Worker('spec/worker-string-task.js');
+          expect(w).toBeDefined()
+          aqworker('string_test', w);
+
+          w.addEventListener('message', function(ev) {
+            expect(ev.data).toBe('OK');
+            done();
+          });
+
+          w.postMessage('go');
+        }, MYTIMEOUT);
+
+      it(suiteName + 'worker [multi-part interleaved tx] test',
+        function(done) {
 
           var w = new Worker('spec/mytask.js');
           expect(w).toBeDefined()
-          aqworker('w1', w);
+          aqworker('multi_part_interleaved', w);
 
           w.addEventListener('message', function(ev) {
-            //alert('got data: ' + ev.data);
             expect(ev.data).toBe('multi-part interleaved tx test OK');
             done();
           });

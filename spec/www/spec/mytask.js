@@ -6,6 +6,7 @@ importScripts('SQLitePlugin.js');
 self.addEventListener('message', function(ev) {
   if (ev.data === 'go') {
 
+//* ** {{
     function equal(a, b, s) {
       if (a !== b) {
         // XXX TODO: throw
@@ -39,16 +40,17 @@ self.addEventListener('message', function(ev) {
         }
       };
     }
+// ** }} */
 
-/* **
+/* ** {{
     sqlitePlugin.openDatabase({name:'my.db'}, function(db) {
       db.executeSql("SELECT UPPER('MyText') AS u1", [], function(res) {
         self.postMessage('sql res u1: ' + res.rows.item(0).u1);
       });
     });
-// */
+// ** }} */
 
-/* **
+/* ** {{
     sqlitePlugin.openDatabase({name:'ASCII-string-test.db'}, function(db) {
           db.transaction(function(tx) {
 
@@ -63,9 +65,9 @@ self.addEventListener('message', function(ev) {
             });
           });
     });
-// */
+// ** }} */
 
-/* **
+/* ** {{
     sqlitePlugin.openDatabase({name:'INSERT-test.db'}, function(db) {
           db.transaction(function(tx) {
             //ok(!!tx, "tx object");
@@ -87,9 +89,9 @@ self.addEventListener('message', function(ev) {
           });
 
     });
-// */
+// ** }} */
 
-/* **
+/* ** {{
     sqlitePlugin.openDatabase({name:'worker-db-trx-test.db'}, function(db) {
 
           var check = 0;
@@ -189,9 +191,9 @@ self.addEventListener('message', function(ev) {
           });
 
     });
-// */
+// ** }} */
 
-/* **
+/* ** {{
     sqlitePlugin.openDatabase({name:'worker-multi-part-test.db'}, function(db) {
 
           db.executeSql("DROP TABLE IF EXISTS tt");
@@ -248,7 +250,7 @@ self.addEventListener('message', function(ev) {
           //self.postMessage('t2');
 
     });
-// */
+// ** }} */
 
 //* ** {{
     var db = sqlitePlugin.openDatabase({name:'worker-multi-part-interleaved-test.db'});
