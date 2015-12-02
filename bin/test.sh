@@ -47,6 +47,9 @@ rm -fr ../.plugin
 mkdir -p ../.plugin
 cp -r ../src ../plugin.xml ../www ../.plugin
 
+# update aq*.js
+cp ../.plugin/www/aq*.js www/spec
+
 # update the plugin, run the test app
 cordova platform add $platform
 cordova plugin rm com.brodysoft.sqlitePlugin
