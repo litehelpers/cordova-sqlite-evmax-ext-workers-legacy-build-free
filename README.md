@@ -1,6 +1,6 @@
 # Cordova/PhoneGap sqlite storage - free enterprise version with web worker test
  
-Test release with *very basic* support for web workers ~~in `sample-worker/www`~~ _www_ for Android and iOS *ONLY*.
+Test release with *very basic* support for web workers (Android and iOS *ONLY*).
 
 Native interface to sqlite in a Cordova/PhoneGap plugin for Android and iOS with API similar to HTML5/[Web SQL API](http://www.w3.org/TR/webdatabase/).
 
@@ -19,10 +19,11 @@ TBD NOTE (only an issue if app loads external content)
 It is *highly* recommended to use the sample application ~~in `sample-worker/www`~~ _www_ as a starting point, at least during initial testing.
 
 Some **important** pointers:
-- See `www/sample-index.html`, the `aqmain.js` script must be included before your app Javascript
-- See `www/sample-index.js`: a worker must be registered with a unique name **with no special characters** (TBD: specify which ones) using the `aqregister` function before the worker can have access to the sqlite plugin features
+- See `www/sample-index.html`, the `aqmain.js` script must be included (or imported) before your app Javascript
+- See `www/sample-index.js`: a worker must be registered with a unique name **with no special characters** (TBD: specify which ones) using the `AQ.aqregister` function before the worker can have access to the sqlite plugin features
 - See `www/sample-worker.js`: some requirements in the worker script:
-  - The following scripts must be imported: `aqworker.js` and `SQLitePlugin.js`
+  - `SQLitePlugin.js` must be imported.
+  - `SQLitePlugin.js` and `aqworker.js` must be in the same directory (`SQLitePlugin.js` automatically imports `aqworker.js` within a web worker).
   - To receive messages from the main thread, please use `self.addEventListener` instead of `self.onmessage`
   - This plugin sends internal string messages starting with `!!!` from the main thread to the worker thread. It is *highly* recommended to filter the messages for your own pattern.
   - Use `sqlitePlugin.openDatabase` instead of `window.sqlitePlugin.openDatabase`
@@ -33,7 +34,7 @@ Some **important** pointers:
 - it is currently not possible to close or delete a database from a web worker (iOS version, needs to be tested in Android version)
 - extra logging statements
 - source code changes to the native Android and iOS versions needs some cleanup
-- The Android version generates ugly "404 (not found)" XHR errors in the debug console.
+- ~~The Android version generates ugly "404 (not found)" XHR errors in the debug console.~~
 
 ## Version Status
 

@@ -161,15 +161,16 @@ public class SQLitePlugin extends CordovaPlugin {
                     @Override
                     public void success(String s) {
                         Log.i("info", "*************** SUCCESS WITH STRING: " + s);
-                        //webView.sendJavascript("aqcallback('" + s + "')");
-                        String cbScript = "aqcallback('" + cbHandler + "', '" + cbId + "?" + s + "')";
+                        String cbScript = "$AQCB['" + cbHandler + "']('" + cbId + "?" + s + "')";
                         Log.i("info", "send Javascript: " + cbScript);
                         webView.sendJavascript(cbScript);
                     }
 
                     @Override
                     public void success(JSONObject o) {
-                        webView.sendJavascript("aqcallback('success with object: " + o.toString() + "')");
+                        Log.i("info", "*************** SUCCESS WITH Object: " + o.toString());
+                        // XXX TBD ???:
+                        //webView.sendJavascript("aqcallback('success with object: " + o.toString() + "')");
                     }
 
                     @Override
@@ -177,7 +178,7 @@ public class SQLitePlugin extends CordovaPlugin {
                         Log.i("info", "**** SUCCESS WITH ARRAY: " + a.toString());
                         //webView.sendJavascript("aqcallback('" + java.net.URLEncoder.encode(a.toString()) + "')");
                         try {
-                        String cbScript = "aqcallback('" + cbHandler + "', '" + cbId + "?" +
+                        String cbScript = "$AQCB['" + cbHandler + "']('" + cbId + "?" +
                             java.net.URLEncoder.encode(a.toString(), "UTF-8").replace("+", "%20") + "')";
                         Log.i("info", "send Javascript: " + cbScript);
                         webView.sendJavascript(cbScript);
@@ -186,7 +187,8 @@ public class SQLitePlugin extends CordovaPlugin {
 
                     @Override
                     public void error(String s) {
-                        webView.sendJavascript("aqcallback('error with string: " + s + "')");
+                        // XXX TBD ???:
+                        //webView.sendJavascript("aqcallback('error with string: " + s + "')");
                     }
                 });
             } catch(Exception e) {

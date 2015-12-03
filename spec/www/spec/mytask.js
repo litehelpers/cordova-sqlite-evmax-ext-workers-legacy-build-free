@@ -1,4 +1,3 @@
-importScripts('aqworker.js');
 importScripts('SQLitePlugin.js');
 
 //var root = this;

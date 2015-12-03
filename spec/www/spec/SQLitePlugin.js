@@ -4,7 +4,7 @@ Contact for commercial license: info@litehelpers.net
  */
 
 (function() {
-  var DB_STATE_INIT, DB_STATE_OPEN, MAX_PART_SIZE, MAX_SQL_CHUNK, READ_ONLY_REGEX, SQLiteFactory, SQLitePlugin, SQLitePluginTransaction, argsArray, batchid, dblocations, err, error1, isWorker, newSQLError, nextTick, root, txLocks, useflatjson;
+  var DB_STATE_INIT, DB_STATE_OPEN, MAX_PART_SIZE, MAX_SQL_CHUNK, READ_ONLY_REGEX, SQLiteFactory, SQLitePlugin, SQLitePluginTransaction, argsArray, batchid, dblocations, isWorker, newSQLError, nextTick, root, txLocks, useflatjson;
 
   root = this;
 
@@ -24,17 +24,14 @@ Contact for commercial license: info@litehelpers.net
 
   MAX_PART_SIZE = 1;
 
-  try {
-    isWorker = !!aqsetcbprefix && !!aqrequest;
-  } catch (error1) {
-    err = error1;
-  }
+  isWorker = !!!root.document;
 
   txLocks = {};
 
   useflatjson = false;
 
   if (isWorker) {
+    importScripts('aqworker.js');
     aqsetcbprefix('sqlcb');
   }
 
@@ -340,14 +337,14 @@ Contact for commercial license: info@litehelpers.net
   };
 
   SQLitePluginTransaction.prototype.start = function() {
-    var error2;
+    var err, error1;
     try {
       this.fn(this);
       if (this.executes.length > 0) {
         this.run();
       }
-    } catch (error2) {
-      err = error2;
+    } catch (error1) {
+      err = error1;
       txLocks[this.db.dbname].inProgress = false;
       this.db.startNextTransaction();
       if (this.error) {
@@ -465,7 +462,7 @@ Contact for commercial license: info@litehelpers.net
     tx = this;
     handlerFor = function(index, didSucceed) {
       return function(response) {
-        var error2, sqlError;
+        var err, error1, sqlError;
         try {
           if (didSucceed) {
             tx.handleStatementSuccess(batchExecutes[index].success, response);
@@ -477,8 +474,8 @@ Contact for commercial license: info@litehelpers.net
             }
             tx.handleStatementFailure(batchExecutes[index].error, sqlError);
           }
-        } catch (error2) {
-          err = error2;
+        } catch (error1) {
+          err = error1;
           if (!txFailure) {
             txFailure = newSQLError(err);
           }

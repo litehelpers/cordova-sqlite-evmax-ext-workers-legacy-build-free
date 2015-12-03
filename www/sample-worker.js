@@ -1,4 +1,3 @@
-importScripts('aqworker.js');
 importScripts('SQLitePlugin.js');
 
 self.addEventListener('message', function(ev) {

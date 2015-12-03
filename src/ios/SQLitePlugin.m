@@ -207,7 +207,8 @@ static NSMutableDictionary * batchmap = NULL;
     NSObject * res = [self openWithOptions: dict];
 
     // XXX TODO fix error handling
-    NSString * myScript = [NSString stringWithFormat:@"%@('%@', '%@?%@');", @"aqcallback", cbHandler, cbid, res];
+    //NSString * myScript = [NSString stringWithFormat:@"%@('%@', '%@?%@');", @"aqcallback", cbHandler, cbid, res];
+    NSString * myScript = [NSString stringWithFormat:@"%@['%@']('%@?%@');", @"$AQCB", cbHandler, cbid, res];
     NSLog(@"dispatch Javascript: %@", myScript);
     [webView stringByEvaluatingJavaScriptFromString: myScript];
 }
@@ -429,7 +430,8 @@ static NSMutableDictionary * batchmap = NULL;
     //NSLog(@"encoded res: %@", ur);
 
     // NOTE: double-quotes needed when sending URL-encoded JSON results
-    NSString * myScript = [NSString stringWithFormat:@"%@('%@', \"%@?%@\");", @"aqcallback", cbHandler, cbid, ur];
+    //NSString * myScript = [NSString stringWithFormat:@"%@('%@', \"%@?%@\");", @"aqcallback", cbHandler, cbid, ur];
+    NSString * myScript = [NSString stringWithFormat:@"%@['%@']('%@?%@');", @"$AQCB", cbHandler, cbid, ur];
     NSLog(@"dispatch Javascript: %@", myScript);
     [webView stringByEvaluatingJavaScriptFromString: myScript];
 }

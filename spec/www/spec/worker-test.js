@@ -34,7 +34,7 @@ var mytests = function() {
 
           var w = new Worker('spec/worker-string-task.js');
           expect(w).toBeDefined()
-          aqworker('string_test', w);
+          AQ.aqworker('string_test', w);
 
           w.addEventListener('message', function(ev) {
             expect(ev.data).toBe('OK');
@@ -49,7 +49,7 @@ var mytests = function() {
 
           var w = new Worker('spec/mytask.js');
           expect(w).toBeDefined()
-          aqworker('multi_part_interleaved', w);
+          AQ.aqworker('multi_part_interleaved', w);
 
           w.addEventListener('message', function(ev) {
             expect(ev.data).toBe('multi-part interleaved tx test OK');

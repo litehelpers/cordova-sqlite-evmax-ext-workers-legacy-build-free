@@ -31,10 +31,7 @@
 
 ## global(s):
 
-    try
-      isWorker = !!aqsetcbprefix and !!aqrequest
-    catch err
-      # do nothing
+    isWorker = !!!root.document
 
     # per-db map of locking and queueing
     # XXX NOTE: This is NOT cleaned up when a db is closed and/or deleted.
@@ -49,6 +46,7 @@
     useflatjson = false
 
     if isWorker
+      importScripts 'aqworker.js'
       aqsetcbprefix 'sqlcb'
 
 ## utility functions:

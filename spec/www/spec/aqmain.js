@@ -1,13 +1,18 @@
-var aqmap = {};
+(function(root) {
+  root.$AQCB = root.$AQCB || {};
 
-function aqcallback(cbHandler, s) {
-  h = aqmap[cbHandler];
-  if (!!h) h(s);
-}
+  function aqworker(handlerId, w) {
+    root.$AQCB[handlerId] = function(s) {
+      w.postMessage(s);
+    };
 
-function aqworker(handlerId, w) {
-  aqmap[handlerId] = function(s) {
-    w.postMessage(s);
+    w.postMessage('!!!sethandlername?'+handlerId);
+  }
+
+  var AQ = {
+    aqworker: aqworker
   };
-  w.postMessage('!!!sethandlername?'+handlerId);
-}
+
+  // THANKS: http://blog.vjeux.com/2011/javascript/javascript-one-line-global-export.html
+  root.AQ = (root.module || {}).exports = AQ;
+})(this);
