@@ -16,7 +16,7 @@ TBD NOTE (only an issue if app loads external content)
 
 ## Usage in web worker(s)
 
-It is *highly* recommended to use the sample application ~~in `sample-worker/www`~~ _www_ as a starting point, at least during initial testing.
+It is *highly* recommended to use the sample application `www` as a starting point, at least during initial testing.
 
 Some **important** pointers:
 - See `www/sample-index.html`, the `aqmain.js` script must be included (or imported) before your app Javascript
@@ -34,11 +34,10 @@ Some **important** pointers:
 - it is currently not possible to close or delete a database from a web worker (iOS version, needs to be tested in Android version)
 - extra logging statements
 - source code changes to the native Android and iOS versions needs some cleanup
-- ~~The Android version generates ugly "404 (not found)" XHR errors in the debug console.~~
 
 ## Version Status
 
-- Major modifications _have been made to_ to support web workers
+- Major modifications have been made to to support web workers
 - Certain features described below may be partially or completely broken
 
 TBD test:
