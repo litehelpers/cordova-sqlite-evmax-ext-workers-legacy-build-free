@@ -22,7 +22,7 @@ Contact for commercial license: info@litehelpers.net
 
   MAX_SQL_CHUNK = 0;
 
-  MAX_PART_SIZE = 1;
+  MAX_PART_SIZE = 500;
 
   isWorker = !!!root.document;
 
@@ -603,8 +603,6 @@ Contact for commercial license: info@litehelpers.net
         pl = rlength > MAX_PART_SIZE ? MAX_PART_SIZE : rlength;
         part = rem.slice(0, pl);
         rem = rem.slice(pl);
-        console.log('part: ' + JSON.stringify(part));
-        console.log('rem: ' + JSON.stringify(rem));
         aqrequest('sq', 'batchPart', encodeURIComponent(JSON.stringify([
           {
             batchid: batchname,

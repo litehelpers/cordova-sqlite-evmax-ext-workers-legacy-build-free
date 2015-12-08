@@ -27,7 +27,7 @@
     ###
     MAX_SQL_CHUNK = 0
 
-    MAX_PART_SIZE = 100
+    MAX_PART_SIZE = 500
 
 ## global(s):
 
@@ -617,7 +617,7 @@
           dbargs: dbname: @db.dbname
           batchid: batchname
           flen: batchExecutes.length
-        } ])), (s) -> return #self.postMessage 'got batchStart response'
+        } ])), (s) -> return
 
         k = 0
         partid = 0
@@ -626,22 +626,18 @@
           pl = if rlength > MAX_PART_SIZE then MAX_PART_SIZE else rlength
           part = rem.slice(0, pl)
           rem = rem.slice(pl)
-          console.log 'part: ' + JSON.stringify(part)
-          console.log 'rem: ' + JSON.stringify(rem)
+          #console.log 'part: ' + JSON.stringify(part)
+          #console.log 'rem: ' + JSON.stringify(rem)
           aqrequest 'sq', 'batchPart', encodeURIComponent(JSON.stringify([ {
             batchid: batchname
             partid: ++partid
             flen: batchExecutes.length
             part: part
-          } ])), (s) -> return #self.postMessage('got batchStart response')
+          } ])), (s) -> return
 
         aqrequest 'sq', 'batchRun', encodeURIComponent(JSON.stringify([ { batchid: batchname } ])), (s) ->
-          #self.postMessage 'got sql response'
-          #self.postMessage 'sql response s: ' + s
           json = decodeURIComponent(s)
-          #self.postMessage('sql json response: ' + json
           res = JSON.parse(json)
-          #self.postMessage 'sql response object: ' + JSON.stringify(res)
           mycb res
           return
 

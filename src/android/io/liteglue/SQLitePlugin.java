@@ -57,13 +57,13 @@ public class SQLitePlugin extends CordovaPlugin {
 
     @Override
     public Uri remapUri(Uri uri) {
-        Log.i("info", "*************** AQS URL");
-        Log.i("info", "***************************************");
+        //Log.i("info", "*************** AQS URL");
+        //Log.i("info", "***************************************");
 
         String url = uri.toString();
 
         if (url.startsWith("aqaq", 0) || url.startsWith("file:///aq", 0)) {
-            Log.i("info", "**** url match: " + url);
+            //Log.i("info", "**** url match: " + url);
 
             try {
                 //webView.sendJavascript("aqcallback('decoded uri: " + java.net.URLDecoder.decode(url, "UTF-8")+ "')");
@@ -144,7 +144,7 @@ public class SQLitePlugin extends CordovaPlugin {
                 parameters = null;
 
                 //Log.i("info", "*********** op: " + op);
-                Log.i("info", "*********** args: " + args);
+                //Log.i("info", "*********** args: " + args);
 
                 final String cbHandler = cbComponents[0];
                 final String cbId = cbComponents[1];
@@ -154,15 +154,15 @@ public class SQLitePlugin extends CordovaPlugin {
                 // no longer needed, should be freed:
                 args = null;
 
-                Log.i("info", "*************** execute");
-                Log.i("info", "***************************************");
+                //Log.i("info", "*************** execute");
+                //Log.i("info", "***************************************");
 
                 execute(method, aj, new CallbackContext(null, null) {
                     @Override
                     public void success(String s) {
-                        Log.i("info", "*************** SUCCESS WITH STRING: " + s);
+                        //Log.i("info", "*************** SUCCESS WITH STRING: " + s);
                         String cbScript = "$AQCB['" + cbHandler + "']('" + cbId + "?" + s + "')";
-                        Log.i("info", "send Javascript: " + cbScript);
+                        //Log.i("info", "send Javascript: " + cbScript);
                         webView.sendJavascript(cbScript);
                     }
 
@@ -175,12 +175,12 @@ public class SQLitePlugin extends CordovaPlugin {
 
                     @Override
                     public void success(JSONArray a) {
-                        Log.i("info", "**** SUCCESS WITH ARRAY: " + a.toString());
+                        //Log.i("info", "**** SUCCESS WITH ARRAY: " + a.toString());
                         //webView.sendJavascript("aqcallback('" + java.net.URLEncoder.encode(a.toString()) + "')");
                         try {
                         String cbScript = "$AQCB['" + cbHandler + "']('" + cbId + "?" +
                             java.net.URLEncoder.encode(a.toString(), "UTF-8").replace("+", "%20") + "')";
-                        Log.i("info", "send Javascript: " + cbScript);
+                        //Log.i("info", "send Javascript: " + cbScript);
                         webView.sendJavascript(cbScript);
                         } catch(Exception e) {}
                     }
@@ -204,9 +204,9 @@ public class SQLitePlugin extends CordovaPlugin {
 
     @Override
     public CordovaResourceApi.OpenForReadResult handleOpenForRead(Uri uri) throws java.io.IOException {
-        Log.i("info", "***************************************");
-        Log.i("info", "*************** AQS handleOpenForRead");
-        Log.i("info", "handleOpenForRead: " + uri.toString());
+        //Log.i("info", "***************************************");
+        //Log.i("info", "*************** AQS handleOpenForRead");
+        //Log.i("info", "handleOpenForRead: " + uri.toString());
 
         return new CordovaResourceApi.OpenForReadResult(uri, new ByteArrayInputStream(new byte[0]), "a", 0, null);
     }
@@ -224,9 +224,9 @@ public class SQLitePlugin extends CordovaPlugin {
 
         Action action;
         try {
-Log.i("info", "*.");
+//Log.i("info", "*.");
             action = Action.valueOf(actionAsString);
-Log.i("info", "*.");
+//Log.i("info", "*.");
         } catch (IllegalArgumentException e) {
             // shouldn't ever happen
             Log.e(SQLitePlugin.class.getSimpleName(), "unexpected error", e);
@@ -234,7 +234,7 @@ Log.i("info", "*.");
         }
 
         try {
-Log.i("info", "*.");
+//Log.i("info", "*.");
             return executeAndPossiblyThrow(action, args, cbc);
         } catch (JSONException e) {
             // TODO: signal JSON problem to JS
@@ -250,14 +250,14 @@ Log.i("info", "*.");
         JSONObject o;
         String dbname;
 
-Log.i("info", "*..");
+//Log.i("info", "*..");
         switch (action) {
             case open:
-Log.i("info", "*...");
+//Log.i("info", "*...");
                 o = args.getJSONObject(0);
-Log.i("info", "*...");
+//Log.i("info", "*...");
                 dbname = o.getString("name");
-Log.i("info", "*...");
+//Log.i("info", "*...");
                 // open database and start reading its queue
                 this.startDatabase(dbname, o, cbc);
                 break;
@@ -279,7 +279,7 @@ Log.i("info", "*...");
 
             // XXX TODO TODO IMPROVED ERROR CHECKING FOR THESE CASES:
             case batchStart:
-                Log.i("info", "======== batchStart");
+                //Log.i("info", "======== batchStart");
                 JSONObject allargs1 = args.getJSONObject(0);
 
                 JSONObject dbargs1 = allargs1.getJSONObject("dbargs");
@@ -290,21 +290,21 @@ Log.i("info", "*...");
 
                 Batch b = new Batch(dbname1, mybatchid1, mylen1);
                 batchmap.put(mybatchid1, b);
-                Log.i("info", "======== batchStart done");
+                //Log.i("info", "======== batchStart done");
 
                 break;
 
             case batchPart:
-                Log.i("info", "======== batchPart");
+                //Log.i("info", "======== batchPart");
                 JSONObject allargs2 = args.getJSONObject(0);
-                Log.i("info", "======== batchPart .");
+                //Log.i("info", "======== batchPart .");
                 String mybatchid2 = allargs2.getString("batchid");
-                Log.i("info", "======== batchPart ..");
+                //Log.i("info", "======== batchPart ..");
 
                 JSONArray part = allargs2.getJSONArray("part");
-                Log.i("info", "======== batchPart ...");
+                //Log.i("info", "======== batchPart ...");
                 Batch b2 = batchmap.get(mybatchid2);
-                Log.i("info", "======== batchPart ....");
+                //Log.i("info", "======== batchPart ....");
                 for (int ii2 = 0; ii2 < part.length(); ++ii2) {
                   b2.flatlist.put(part.get(ii2));
 
@@ -329,12 +329,12 @@ Log.i("info", "*...");
                   }
 */
                 }
-                Log.i("info", "======== batchPart done");
+                //Log.i("info", "======== batchPart done");
 
                 break;
 
             case batchRun:
-                Log.i("info", "======== batchRun");
+                //Log.i("info", "======== batchRun");
                 JSONObject allargs3 = args.getJSONObject(0);
                 String mybatchid3 = allargs3.getString("batchid");
                 Batch b3 = batchmap.get(mybatchid3);
@@ -349,7 +349,7 @@ Log.i("info", "*...");
                 args = new JSONArray();
                 args.put(allargs3);
 
-                Log.i("info", "======== batchRun execute");
+                //Log.i("info", "======== batchRun execute");
                 // fallthrough to execute
 
             case executeSqlBatch:
@@ -368,12 +368,12 @@ Log.i("info", "*...");
 
                 // XXX TODO: currently goes through flatlist in multiple [2] passes
                 for (int i = 0; i < mylen; i++) {
-                    Log.i("info", "======== ai: " + ai);
+                    //Log.i("info", "======== ai: " + ai);
                     queries[i] = flatlist.getString(ai++);
-                    Log.i("info", "======== got query: " + queries[i]);
-                    Log.i("info", "======== ai: " + ai);
+                    //Log.i("info", "======== got query: " + queries[i]);
+                    //Log.i("info", "======== ai: " + ai);
                     int alen = flatlist.getInt(ai++);
-                    Log.i("info", "======== got alen: " + alen);
+                    //Log.i("info", "======== got alen: " + alen);
                     ai += alen;
                 }
 
@@ -424,26 +424,26 @@ Log.i("info", "*...");
     private void startDatabase(String dbname, JSONObject options, CallbackContext cbc) {
         // TODO: is it an issue that we can orphan an existing thread?  What should we do here?
         // If we re-use the existing DBRunner it might be in the process of closing...
-Log.i("info", "**.");
+//Log.i("info", "**.");
         DBRunner r = dbrmap.get(dbname);
-Log.i("info", "**.");
+//Log.i("info", "**.");
 
         // Brody TODO: It may be better to terminate the existing db thread here & start a new one, instead.
         if (r != null) {
             // don't orphan the existing thread; just re-open the existing database.
             // In the worst case it might be in the process of closing, but even that's less serious
             // than orphaning the old DBRunner.
-Log.i("info", "aa **..");
+//Log.i("info", "aa **..");
             cbc.success("a1"); // Indicate Android version with flat JSON interface
-Log.i("info", "**..");
+//Log.i("info", "**..");
         } else {
-Log.i("info", "**..");
+//Log.i("info", "**..");
             r = new DBRunner(dbname, options, cbc);
-Log.i("info", "**..");
+//Log.i("info", "**..");
             dbrmap.put(dbname, r);
-Log.i("info", "**..");
+//Log.i("info", "**..");
             this.cordova.getThreadPool().execute(r);
-Log.i("info", "**..");
+//Log.i("info", "**..");
         }
     }
     /**
