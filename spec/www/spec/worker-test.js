@@ -59,6 +59,21 @@ var mytests = function() {
           w.postMessage('go');
         }, MYTIMEOUT);
 
+      it(suiteName + 'worker big batch test',
+        function(done) {
+
+          var w = new Worker('spec/worker-big-batch-task.js');
+          expect(w).toBeDefined()
+          AQ.aqworker('big_batch_test', w);
+
+          w.addEventListener('message', function(ev) {
+            expect(ev.data).toBe('OK');
+            done();
+          });
+
+          w.postMessage('go');
+        }, MYTIMEOUT);
+
     });
   };
 }
