@@ -25,7 +25,7 @@ static NSMutableDictionary * batchmap = NULL;
 
 + (BOOL) canInitWithRequest:(NSURLRequest *)request {
     // XXX TBD is this really the most efficient possible?
-    NSLog(@"got uri: %@", request.URL.absoluteString);
+    //NSLog(@"got uri: %@", request.URL.absoluteString);
     if ([request.URL.absoluteString hasPrefix:@"file:///aqaq"]) {
         NSString * req = request.URL.absoluteString;
         NSArray * topComponents = [req componentsSeparatedByString: @"#"];
@@ -99,6 +99,8 @@ static NSMutableDictionary * batchmap = NULL;
             [handler handleMessage: me withParameters: parameters];
         }
 */
+        // NEEDED to prevent ugly error messages in Web Inspector console:
+        return YES;
     }
     return NO;
 }
@@ -209,7 +211,7 @@ static NSMutableDictionary * batchmap = NULL;
     // XXX TODO fix error handling
     //NSString * myScript = [NSString stringWithFormat:@"%@('%@', '%@?%@');", @"aqcallback", cbHandler, cbid, res];
     NSString * myScript = [NSString stringWithFormat:@"%@['%@']('%@?%@');", @"$AQCB", cbHandler, cbid, res];
-    NSLog(@"dispatch Javascript: %@", myScript);
+    //NSLog(@"dispatch Javascript: %@", myScript);
     [webView stringByEvaluatingJavaScriptFromString: myScript];
 }
 
@@ -378,7 +380,7 @@ static NSMutableDictionary * batchmap = NULL;
 {
     NSString * batchid = [options objectForKey: @"batchid"];
     NSMutableArray * part = [options objectForKey: @"part"];
-    NSLog(@"part for batch id %@ dbname %@", batchid, [[batchmap objectForKey: batchid] objectForKey: @"dbname"]);
+    //NSLog(@"part for batch id %@ dbname %@", batchid, [[batchmap objectForKey: batchid] objectForKey: @"dbname"]);
 
     NSMutableDictionary * b2 = [batchmap objectForKey: batchid];
     NSMutableArray * flatlist = [b2 objectForKey: @"flatlist"];
@@ -432,7 +434,7 @@ static NSMutableDictionary * batchmap = NULL;
     // NOTE: double-quotes needed when sending URL-encoded JSON results
     //NSString * myScript = [NSString stringWithFormat:@"%@('%@', \"%@?%@\");", @"aqcallback", cbHandler, cbid, ur];
     NSString * myScript = [NSString stringWithFormat:@"%@['%@']('%@?%@');", @"$AQCB", cbHandler, cbid, ur];
-    NSLog(@"dispatch Javascript: %@", myScript);
+    //NSLog(@"dispatch Javascript: %@", myScript);
     [webView stringByEvaluatingJavaScriptFromString: myScript];
 }
 

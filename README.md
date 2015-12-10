@@ -32,7 +32,7 @@ Some **important** pointers:
 ## LIMITATIONS and other TODO(s) to be fixed:
 
 - it is currently not possible to close or delete a database from a web worker (iOS version, needs to be tested in Android version)
-- extra logging statements
+- extra logging statements (*almost completely* commented out)
 - source code changes to the native Android and iOS versions needs some cleanup
 
 ## Version Status
