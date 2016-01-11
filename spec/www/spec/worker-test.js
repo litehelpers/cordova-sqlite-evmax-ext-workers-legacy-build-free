@@ -44,6 +44,26 @@ var mytests = function() {
           w.postMessage('go');
         }, MYTIMEOUT);
 
+      /* ** FUTURE TODO:
+      it(suiteName + 'worker multi-part string tx test',
+        function(done) {
+
+          var w = new Worker('spec/worker-multi-part-string-task.js');
+          expect(w).toBeDefined()
+          AQ.aqworker('string_test', w);
+
+          w.addEventListener('message', function(ev) {
+            expect(ev.data).toBe('OK');
+            done();
+          });
+
+          w.postMessage('go');
+        }, MYTIMEOUT);
+
+      // FUTURE TODO: some more worker tests (commented out in spec/mytask.js)
+
+      // ** */
+
       it(suiteName + 'worker [multi-part interleaved tx] test',
         function(done) {
 
@@ -53,6 +73,21 @@ var mytests = function() {
 
           w.addEventListener('message', function(ev) {
             expect(ev.data).toBe('multi-part interleaved tx test OK');
+            done();
+          });
+
+          w.postMessage('go');
+        }, MYTIMEOUT);
+
+      it(suiteName + 'worker multi-part tx with NOT NULL contraint violation test',
+        function(done) {
+
+          var w = new Worker('spec/worker-multi-part-constraint-violation-task.js');
+          expect(w).toBeDefined()
+          AQ.aqworker('multi_part_constraint_violation', w);
+
+          w.addEventListener('message', function(ev) {
+            expect(ev.data).toBe('OK');
             done();
           });
 
