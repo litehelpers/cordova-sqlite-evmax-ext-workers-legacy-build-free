@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    id="cordova-sqlite-workers-evfree"
-    version="0.8.2-pre">
+    id="cordova-sqlite-evplus-legacy-workers-free"
+    version="0.8.2">
 
-    <name>Cordova sqlite storage - free enterprise version with web worker support</name>
+    <name>Cordova sqlite storage - premium enterprise version with legacy support for web workers</name>
 
     <license>GPL</license>
 

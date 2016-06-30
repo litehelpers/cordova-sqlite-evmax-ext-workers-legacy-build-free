@@ -1,36 +1,28 @@
 {
-  "name": "cordova-sqlite-workers-evfree",
-  "version": "0.8.2-pre",
-  "description": "Native interface to SQLite for PhoneGap/Cordova - free enterprise version with web worker support",
+  "name": "cordova-sqlite-evplus-legacy-workers-free",
+  "version": "0.8.2",
+  "description": "Native interface to SQLite for PhoneGap/Cordova - premium enterprise version with legacy support for web worke",
   "cordova": {
-    "id": "cordova-sqlite-worker-test",
+    "id": "cordova-sqlite-sqlite-evplus-legacy-workers-free",
     "platforms": [
       "android",
-      "ios",
-      "windows",
+      "ios"
     ]
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/litehelpers/cordova-sqlite-common.git"
+    "url": "https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free.git"
   },
   "keywords": [
     "sqlite",
     "ecosystem:cordova",
     "cordova-android",
-    "cordova-ios",
-    "cordova-windows",
-  ],
-  "engines": [
-    {
-      "name": "cordova",
-      "version": ">=3.3.0"
-    }
+    "cordova-ios"
   ],
   "author": "various",
   "license": "GPL",
   "bugs": {
-    "url": "https://github.com/litehelpers/cordova-sqlite-common/issues"
+    "url": "https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free/issues"
   },
-  "homepage": "https://github.com/litehelpers/cordova-sqlite-common"
+  "homepage": "https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free"
 }

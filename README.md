@@ -1,12 +1,16 @@
-# Cordova/PhoneGap sqlite storage - free enterprise version with web worker test
+# Cordova/PhoneGap sqlite storage - premium enterprise version with legacy support for web workers
  
 Test release with *very basic* support for web workers (Android and iOS *ONLY*).
 
 Native interface to sqlite in a Cordova/PhoneGap plugin for Android and iOS with API similar to HTML5/[Web SQL API](http://www.w3.org/TR/webdatabase/).
 
-This version is available under GPL v3 (http://www.gnu.org/licenses/gpl.txt) or commercial license. Contact for commercial license: info@litehelpers.net
+This version is available under GPL v3 (http://www.gnu.org/licenses/gpl.txt) or commercial license.
 
-NOTE (TBD): no Circle CI or Travis CI working in this version branch.
+TBD: no Circle CI or Travis CI working in this version branch.
+
+NOTE: Commercial licenses for Cordova-sqlite-enterprise-free purchased before July 2016 are valid for this version. Commercial licenses for Cordova-sqlite-evcore versions are *not* valid for this version.
+
+This version is in legacy maintenance status. Only security and extremely critical bug fixes will be considered.
 
 ## BREAKING CHANGE: Database location parameter is now mandatory
 
@@ -130,7 +134,6 @@ TBD
 
 - A stability issue was reported on the iOS version when in use together with [SockJS](http://sockjs.org/) client such as [pusher-js](https://github.com/pusher/pusher-js) at the same time. The workaround is to call sqlite functions and [SockJS](http://sockjs.org/) client functions in separate ticks (using setTimeout with 0 timeout).
 - If a sql statement fails for which there is no error handler or the error handler does not return `false` to signal transaction recovery, the plugin fires the remaining sql callbacks before aborting the transaction.
-- ~~In case of an error, the error `code` member is bogus on Android and Windows (fixed for Android in [litehelpers / Cordova-sqlite-enterprise-free](https://github.com/litehelpers/Cordova-sqlite-enterprise-free)).~~
 - Possible crash on Android when using Unicode emoji characters due to [Android bug 81341](https://code.google.com/p/android/issues/detail?id=81341), which _should_ be fixed in Android 6.x
 - When a database is opened and deleted without closing, the iOS version is known to leak resources.
 - It is NOT possible to open multiple databases with the same name but in different locations (iOS version).
@@ -178,7 +181,8 @@ TBD
 
 ### Other versions
 
-- TBD [litehelpers / Cordova-sqlite-enterprise-free](https://github.com/litehelpers/Cordova-sqlite-enterprise-free) ...
+- TBD [litehelpers / Cordova-sqlite-evplus-legacy-free](https://github.com/litehelpers/Cordova-sqlite-evplus-legacy-free) ...
+- TBD [litehelpers / Cordova-sqlite-evplus-legacy-ext-free](https://github.com/litehelpers/Cordova-sqlite-evplus-legacy-ext-free) ...
 - [litehelpers / Cordova-sqlite-storage](https://github.com/litehelpers/Cordova-sqlite-storage) - Cordova sqlite storage plugin with permissive licensing terms, supported for more platforms.
 - [litehelpers / Cordova-sqlcipher-adapter](https://github.com/litehelpers/Cordova-sqlcipher-adapter) - supports [SQLCipher](https://www.zetetic.net/sqlcipher/) for Android, iOS, and Windows (8.1)
 - Adaptation for React Native Android and iOS: [andpor / react-native-sqlite-storage](https://github.com/andpor/react-native-sqlite-storage)
@@ -578,7 +582,7 @@ window.sqlitePlugin.deleteDatabase({name: "my.db", location: 1}, successcb, erro
 
     npm install -g cordova # if you don't have cordova
     cordova create MyProjectFolder com.my.project MyProject && cd MyProjectFolder # if you are just starting
-    cordova plugin add https://github.com/litehelpers/Cordova-sqlite-enterprise-free
+    cordova plugin add https://github.com/litehelpers/Cordova-sqlite-evplus-legacy-workers-free
  
 You can find more details at [this writeup](http://iphonedevlog.wordpress.com/2014/04/07/installing-chris-brodys-sqlite-database-with-cordova-cli-android/).
 
@@ -592,7 +596,7 @@ You can find more details at [this writeup](http://iphonedevlog.wordpress.com/20
 ## Easy install with plugman tool
 
 ```shell
-plugman install --platform MYPLATFORM --project path.to.my.project.folder --plugin https://github.com/litehelpers/Cordova-sqlite-enterprise-free
+plugman install --platform MYPLATFORM --project path.to.my.project.folder --plugin https://github.com/litehelpers/Cordova-sqlite-evplus-legacy-workers-free
 ```
 
 where MYPLATFORM is `android`, `ios`, or `windows`.
@@ -729,7 +733,7 @@ If you continue to see the issue in a new, clean Cordova project:
   - if the issue is with *adding* data to a table, that the test program includes the statements you used to open the database and create the table;
   - if the issue is with *retrieving* data from a table, that the test program includes the statements you used to open the database, create the table, and enter the data you are trying to retrieve.
 
-Then you can [raise the new issue](https://github.com/litehelpers/Cordova-sqlite-enterprise-free/issues/new).
+Then you can [raise the new issue](https://github.com/litehelpers/Cordova-sqlite-evplus-legacy-workers-free/issues/new).
 
 ## Commercial support
 
@@ -806,7 +810,7 @@ The adapter is now part of [PouchDB](http://pouchdb.com/) thanks to [@nolanlawso
 ## Community
 
 - Testimonials of apps that are using this plugin would be especially helpful.
-- Reporting issues at [litehelpers / Cordova-sqlite-enterprise-free / issues](https://github.com/litehelpers/Cordova-sqlite-enterprise-free/issues) can help improve the quality of this plugin.
+- Reporting issues at [litehelpers / Cordova-sqlite-evplus-legacy-workers-free / issues](https://github.com/litehelpers/Cordova-sqlite-evplus-legacy-workers-free/issues) can help improve the quality of this plugin.
 
 **NOTE:** As stated above, patches will *NOT* be accepted on this project due to potential licensing issues. Issues with reproduction scenarios will help maintain and improve the quality of this plugin for future users.
 
@@ -814,14 +818,6 @@ The adapter is now part of [PouchDB](http://pouchdb.com/) thanks to [@nolanlawso
 
 - https://github.com/liteglue/Android-sqlite-connector
 - https://github.com/liteglue/Android-sqlite-native-driver
-
-# Major branches
-
-TBD fix for this version:
-
-- `common-src` - source for Android ~~(*not* using [Android-sqlite-connector](https://github.com/liteglue/Android-sqlite-connector))~~, iOS, Windows (8.1), ~~and Amazon Fire-OS~~ versions (shared with [litehelpers / Cordova-sqlcipher-adapter](https://github.com/litehelpers/Cordova-sqlcipher-adapter))
-- ~~`evfree-rc` - pre-release of free enterprise version for all supported platforms, including library dependencies for Android and Windows "Universal" (8.1/XX)~~
-- [FUTURE TBD] ~~`master` - version for release, to be included in PhoneGap build.~~
 
 ## Contact
 
