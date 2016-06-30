@@ -252,7 +252,7 @@ self.addEventListener('message', function(ev) {
 // ** }} */
 
 //* ** {{
-    var db = sqlitePlugin.openDatabase({name:'worker-multi-part-interleaved-test.db'});
+    var db = sqlitePlugin.openDatabase({name:'worker-multi-part-interleaved-test.db', location: 'default'});
 
           db.executeSql("DROP TABLE IF EXISTS tt");
           db.executeSql("CREATE TABLE tt (tf)");

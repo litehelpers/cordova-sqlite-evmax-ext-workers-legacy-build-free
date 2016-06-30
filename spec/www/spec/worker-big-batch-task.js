@@ -2,7 +2,7 @@ importScripts('SQLitePlugin.js');
 
 self.addEventListener('message', function(ev) {
     if (ev.data === 'go') {
-        sqlitePlugin.openDatabase({name:'worker-big-batch-test.db'}, function(db) {
+        sqlitePlugin.openDatabase({name:'worker-big-batch-test.db', location: 'default'}, function(db) {
           db.transaction(function(tx) {
 
 

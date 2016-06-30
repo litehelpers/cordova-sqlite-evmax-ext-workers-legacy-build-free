@@ -39,7 +39,7 @@ self.addEventListener('message', function(ev) {
       };
     }
 
-    sqlitePlugin.openDatabase({name:'worker-multi-part-constraint-violation-test.db'}, function(db) {
+    sqlitePlugin.openDatabase({name:'worker-multi-part-constraint-violation-test.db', location: 'default'}, function(db) {
 
           db.executeSql('DROP TABLE IF EXISTS tt');
           db.executeSql('DROP TABLE IF EXISTS tt2');

@@ -8,6 +8,38 @@ This version is available under GPL v3 (http://www.gnu.org/licenses/gpl.txt) or 
 
 NOTE (TBD): no Circle CI or Travis CI working in this version branch.
 
+## BREAKING CHANGE: Database location parameter is now mandatory
+
+The `location` or `iosDatabaseLocation` *must* be specified in the `openDatabase` and `deleteDatabase` calls, as documented below.
+
+### IMPORTANT: iCloud backup of SQLite database is NOT allowed
+
+As documented in the "**A User’s iCloud Storage Is Limited**" section of [iCloudFundamentals in Mac Developer Library iCloud Design Guide](https://developer.apple.com/library/mac/documentation/General/Conceptual/iCloudDesignGuide/Chapters/iCloudFundametals.html) (near the beginning):
+
+<blockquote>
+<ul>
+<li><b>DO</b> store the following in iCloud:
+  <ul>
+   <li>[<i>other items omitted</i>]</li>
+   <li>Change log files for a SQLite database (a SQLite database’s store file must never be stored in iCloud)</li>
+  </ul>
+</li>
+<li><b>DO NOT</b> store the following in iCloud:
+  <ul>
+   <li>[<i>items omitted</i>]</li>
+  </ul>
+</li>
+</ul>
+- <cite><a href="https://developer.apple.com/library/mac/documentation/General/Conceptual/iCloudDesignGuide/Chapters/iCloudFundametals.html">iCloudFundamentals in Mac Developer Library iCloud Design Guide</a>
+</blockquote>
+
+### How to disable iCloud backup
+
+Use the `location` or `iosDatabaseLocation` option in `sqlitePlugin.openDatabase()` to store the database in a subdirectory that is *NOT* backed up to iCloud, as described in the section below.
+
+**NOTE:** Changing `BackupWebStorage` in `config.xml` has no effect on a database created by this plugin. `BackupWebStorage` applies only to local storage and/or Web SQL storage created in the WebView (*not* using this plugin). For reference: [phonegap/build#338 (comment)](https://github.com/phonegap/build/issues/338#issuecomment-113328140)
+
+
 ## SECURITY TODO(s)
 
 - XHR URI request mechanism needs a secret code mechanism, like they have in the Cordova framework
@@ -31,7 +63,7 @@ Some **important** pointers:
 
 ## LIMITATIONS and other TODO(s) to be fixed:
 
-- it is currently not possible to close or delete a database from a web worker (iOS version, needs to be tested in Android version)
+- it is currently not possible to close or delete a database from a web worker
 - extra logging statements (*almost completely* commented out)
 - source code changes to the native Android and iOS versions needs some cleanup
 
@@ -45,6 +77,7 @@ TBD test:
 
 ## Other Status
 
+- The iOS database location is now mandatory, as documented below.
 - Commercial support is available by contacting: info@litehelpers.net
 - Patches patches will *NOT* be accepted on this project due to potential licensing issues.
 - Features omitted from this version branch: pre-populated database support; REGEXP extension for iOS; Windows "Universal", WP(7/8), and Amazon Fire-OS support
@@ -58,6 +91,7 @@ TBD test:
 
 ## Announcements
 
+- More explicit `openDatabase` and `deleteDatabase` `iosDatabaseLocation` option
 - This version has the following API improvement(s):
   - Multi-part transactions API (described below)
   - Error result with proper Web SQL `code` member and `sqliteCode` as reported by the SQLite C library (Android/iOS)
@@ -71,15 +105,26 @@ TBD test:
 
 ## Highlights
 
-- Drop-in replacement for HTML5/[Web SQL API](http://www.w3.org/TR/webdatabase/), the only change should be `window.openDatabase()` --> `sqlitePlugin.openDatabase()`
-- Failure-safe nested transactions with batch processing optimizations
+- Drop-in replacement for HTML5/[Web SQL API](http://www.w3.org/TR/webdatabase/): the only change should be to replace the static `window.openDatabase()` factory call with `window.sqlitePlugin.openDatabase()`, with parameters as documented below. (*NOTE:* Some known deviations are described below).
+- Failure-safe nested transactions with batch processing optimizations (according to HTML5/[Web SQL API](http://www.w3.org/TR/webdatabase/))
+- FTS3, FTS4, and R-Tree support is tested working OK in this version
 - As described in [this posting](http://brodyspark.blogspot.com/2012/12/cordovaphonegap-sqlite-plugins-offer.html):
-  - Keeps sqlite database in a user data location that is known; can be reconfigured (iOS version); and synchronized to iCloud by default (iOS version; can be disabled as described below).
+  - Keeps sqlite database in a user data location that is known; can be reconfigured (iOS version); may be synchronized to iCloud (iOS version).
   - No 5MB maximum, more information at: http://www.sqlite.org/limits.html
+
 
 ## Some apps using this plugin
 
 TBD
+
+## Some known deviations from the Web SQL database standard
+
+- The `window.sqlitePlugin.openDatabase` static factory call takes a different set of parameters than the standard Web SQL `window.openDatabase` static factory call. In case you have to use existing Web SQL code with no modifications please see the **Web SQL replacement tip** below.
+- This plugin does *not* support the database creation callback or standard database versions. Please read the **Database schema versions** section below for tips on how to support database schema versioning.
+- This plugin does *not* support the synchronous Web SQL interfaces.
+- Error reporting is not 100% compliant, with some issues described below.
+- In case of a transaction with an sql statement error for which there is no error handler, the error handler does not return `false`, or the error handler throws an exception, the plugin will fire more sql statement callbacks before the transaction is aborted with ROLLBACK.
+- This plugin supports some non-standard features as described below.
 
 ## Known issues
 
@@ -87,7 +132,6 @@ TBD
 - If a sql statement fails for which there is no error handler or the error handler does not return `false` to signal transaction recovery, the plugin fires the remaining sql callbacks before aborting the transaction.
 - ~~In case of an error, the error `code` member is bogus on Android and Windows (fixed for Android in [litehelpers / Cordova-sqlite-enterprise-free](https://github.com/litehelpers/Cordova-sqlite-enterprise-free)).~~
 - Possible crash on Android when using Unicode emoji characters due to [Android bug 81341](https://code.google.com/p/android/issues/detail?id=81341), which _should_ be fixed in Android 6.x
-- Close database bugs described below.
 - When a database is opened and deleted without closing, the iOS version is known to leak resources.
 - It is NOT possible to open multiple databases with the same name but in different locations (iOS version).
 - Problems reported with PhoneGap Build in the past:
@@ -100,6 +144,7 @@ TBD
 - This plugin will not work before the callback for the "deviceready" event has been fired, as described in **Usage**. (This is consistent with the other Cordova plugins.)
 - Will not work in a web worker or iframe since these are not supported by the Cordova framework.
 - In-memory database `db=window.sqlitePlugin.openDatabase({name: ":memory:"})` is currently not supported.
+- Close/delete database bugs described below.
 - The Android version cannot work with more than 100 open db files (due to the threading model used).
 - UNICODE line separator (`\u2028`) and paragraph separator (`\u2029`) are currently not supported and known to be broken in iOS version due to [Cordova bug CB-9435](https://issues.apache.org/jira/browse/CB-9435).
 - Blob type is currently not supported and known to be broken on multiple platforms.
@@ -109,10 +154,8 @@ TBD
 - Large query result can be slow, also due to JSON implementation
 - ATTACH another database file is not supported (due to path specifications, which work differently depending on the target platform)
 - User-defined savepoints are not supported and not expected to be compatible with the transaction locking mechanism used by this plugin. In addition, the use of BEGIN/COMMIT/ROLLBACK statements is not supported.
-- Problems have been reported when using this plugin with Crosswalk (for Android). A couple of things you can try:
-  - Install Crosswalk as a plugin instead of using Crosswalk to create the project.
-  - Use `androidDatabaseImplementation: 2` in the openDatabase options as described below.
-- Does not work with [axemclion / react-native-cordova-plugin](https://github.com/axemclion/react-native-cordova-plugin) since the `window.sqlitePlugin` object exported (ES5 feature). It is recommended to use [andpor / react-native-sqlite-storage](https://github.com/andpor/react-native-sqlite-storage) for SQLite database access with React Native Android/iOS instead.
+- Problems have been reported when using this plugin with Crosswalk (for Android). It may help to install Crosswalk as a plugin instead of using Crosswalk to create the project.
+- Does not work with [axemclion / react-native-cordova-plugin](https://github.com/axemclion/react-native-cordova-plugin) since the `window.sqlitePlugin` object is *not* proprly exported (ES5 feature). It is recommended to use [andpor / react-native-sqlite-storage](https://github.com/andpor/react-native-sqlite-storage) for SQLite database access with React Native Android/iOS instead.
 
 ## Further testing needed
 
@@ -124,7 +167,7 @@ TBD
 
 ## Some tips and tricks
 
-- If you run into problems and your code follows the asynchronous HTML5/[Web SQL](http://www.w3.org/TR/webdatabase/) transaction API, you can try opening your database using `window.openDatabase` and see if you get the same problems.
+- In case your database schema may change, it is recommended to keep a table with one row and one column to keep track of your own schema version number. It is possible to add it later. TODO: ~~The recommended schema update procedure is described below.~~
 
 ## Common pitfalls
 
@@ -162,30 +205,54 @@ naelA/nativescript-sqlite) (Android and/or iOS)
 
 # Usage
 
-The idea is to emulate the HTML5/[Web SQL API](http://www.w3.org/TR/webdatabase/) as closely as possible. The only major change is to use `window.sqlitePlugin.openDatabase()` (or `sqlitePlugin.openDatabase()`) instead of `window.openDatabase()`. If you see any other major change please report it, it is probably a bug.
+## General
+
+The idea is to emulate the HTML5/[Web SQL API](http://www.w3.org/TR/webdatabase/) as closely as possible. The only major change is to use `window.sqlitePlugin.openDatabase()` (or `sqlitePlugin.openDatabase()`) *with parameters as documented below* instead of `window.openDatabase()`. If you see any other major change please report it, it is probably a bug.
 
 **NOTE:** If a sqlite statement in a transaction fails with an error, the error handler *must* return `false` in order to recover the transaction. This is correct according to the HTML5/[Web SQL API](http://www.w3.org/TR/webdatabase/) standard. This is different from the WebKit implementation of Web SQL in Android and iOS which recovers the transaction if a sql error hander returns a non-`true` value.
 
 ## Opening a database
 
-There are two options to open a database access object:
-- **Recommended:** `var db = window.sqlitePlugin.openDatabase({name: "my.db", location: 1}, successcb, errorcb);`
-- **Classical:** `var db = window.sqlitePlugin.openDatabase("myDatabase.db", "1.0", "Demo", -1);`
+To open a database access handle object (in the **new** default location):
 
-The `location` option is used to select the database subdirectory location (iOS *only*) with the following choices:
-- `0` (default): `Documents` - visible to iTunes and backed up by iCloud
+```js
+var db = window.sqlitePlugin.openDatabase({name: 'my.db', location: 'default'}, successcb, errorcb);
+```
+
+**WARNING:** The new "default" location value is *NOT* the same as the old default location and would break an upgrade for an app that was using the old default value (0) on iOS.
+
+To specify a different location (affects iOS *only*):
+
+```js
+var db = window.sqlitePlugin.openDatabase({name: 'my.db', iosDatabaseLocation: 'Library'}, successcb, errorcb);
+```
+
+where the `iosDatabaseLocation` option may be set to one of the following choices:
+- `default`: `Library/LocalDatabase` subdirectory - *NOT* visible to iTunes and *NOT* backed up by iCloud
+- `Library`: `Library` subdirectory - backed up by iCloud, *NOT* visible to iTunes
+- `Documents`: `Documents` subdirectory - visible to iTunes and backed up by iCloud
+
+**WARNING:** Again, the new "default" iosDatabaseLocation value is *NOT* the same as the old default location and would break an upgrade for an app using the old default value (0) on iOS.
+
+*ALTERNATIVE (deprecated):*
+- `var db = window.sqlitePlugin.openDatabase({name: "my.db", location: 1}, successcb, errorcb);`
+
+with the `location` option set to one the following choices (affects iOS *only*):
+- `0` ~~(default)~~: `Documents` - visible to iTunes and backed up by iCloud
 - `1`: `Library` - backed up by iCloud, *NOT* visible to iTunes
-- `2`: `Library/LocalDatabase` - *NOT* visible to iTunes and *NOT* backed up by iCloud
+- `2`: `Library/LocalDatabase` - *NOT* visible to iTunes and *NOT* backed up by iCloud (same as using "default")
 
-**IMPORTANT:** Please wait for the "deviceready" event, as in the following example:
+No longer supported (see tip below to overwrite `window.openDatabase`): ~~`var db = window.sqlitePlugin.openDatabase("myDatabase.db", "1.0", "Demo", -1);`~~
+
+**IMPORTANT:** Please wait for the 'deviceready' event, as in the following example:
 
 ```js
 // Wait for Cordova to load
-document.addEventListener("deviceready", onDeviceReady, false);
+document.addEventListener('deviceready', onDeviceReady, false);
 
 // Cordova is ready
 function onDeviceReady() {
-  var db = window.sqlitePlugin.openDatabase({name: "my.db"});
+  var db = window.sqlitePlugin.openDatabase({name: 'my.db', location: 'default'});
   // ...
 }
 ```
@@ -193,7 +260,7 @@ function onDeviceReady() {
 The successcb and errorcb callback parameters are optional but can be extremely helpful in case anything goes wrong. For example:
 
 ```js
-window.sqlitePlugin.openDatabase({name: "my.db"}, function(db) {
+window.sqlitePlugin.openDatabase({name: 'my.db', location: 'default'}, function(db) {
   db.transaction(function(tx) {
     // ...
   }, function(err) {
@@ -206,8 +273,25 @@ If any sql statements or transactions are attempted on a database object before 
 
 **OTHER NOTES:**
 - The database file name should include the extension, if desired.
-- It is possible to open multiple database access objects for the same database.
-- The database access object can be closed as described below.
+- It is possible to open multiple database access handle objects for the same database.
+- The database handle access object can be closed as described below.
+
+**TIP:**
+
+To overwrite `window.openDatabase`:
+
+```Javascript
+window.openDatabase = function(dbname, ignored1, ignored2, ignored3) {
+  return window.sqlitePlugin.openDatabase({name: dbname, location: 'default'});
+};
+```
+
+**Samples and tutorials:**
+
+- Ionic starter template with pre-populated SQLite database at: [jdnichollsc / Ionic-Starter-Template](https://github.com/jdnichollsc/Ionic-Starter-Template)
+- http://redwanhilali.com/ionic-sqlite/
+- Tutorial using [an-rahulpandey / cordova-plugin-dbcopy (alternative solution)](https://github.com/an-rahulpandey/cordova-plugin-dbcopy) (Android/iOS): https://blog.nraboy.com/2015/01/deploy-ionic-framework-app-pre-filled-sqlite-db/
+- https://github.com/brodybits/Cordova-pre-populated-db-example-android (based on Cordova 2.7)
 
 ## SQL transactions
 
@@ -218,7 +302,7 @@ The following types of SQL transactions are supported by this version:
 
 ### Single-statement transactions
 
-Sample:
+Sample (with both success and error callbacks):
 
 ```Javascript
 db.executeSql("SELECT LENGTH('tenletters') AS stringlength", [], function (res) {
@@ -230,13 +314,13 @@ db.executeSql("SELECT LENGTH('tenletters') AS stringlength", [], function (res) 
 
 ## Standard asynchronous transactions
 
-Standard asynchronous transactions follow the HTML5/[Web SQL API](http://www.w3.org/TR/webdatabase/) which is very well documented and uses BEGIN and COMMIT or ROLLBACK to keep the transactions failure-safe. Here is a very simple example from the test suite:
+Standard asynchronous transactions follow the HTML5/[Web SQL API](http://www.w3.org/TR/webdatabase/) which is very well documented and uses BEGIN and COMMIT or ROLLBACK to keep the transactions failure-safe. Here is a very simple example from the test suite (with success and error callbacks):
 
 ```Javascript
 db.transaction(function(tx) {
   tx.executeSql("SELECT UPPER('Some US-ASCII text') AS uppertext", [], function(tx, res) {
     console.log("res.rows.item(0).uppertext: " + res.rows.item(0).uppertext);
-  }, function(error) {
+  }, function(tx, error) {
     console.log('SELECT error: ' + error.message);
   });
 }, function(error) {
@@ -252,7 +336,7 @@ In case of a read-only transaction, it is possible to use `readTransaction` whic
 db.readTransaction(function(tx) {
   tx.executeSql("SELECT UPPER('Some US-ASCII text') AS uppertext", [], function(tx, res) {
     console.log("res.rows.item(0).uppertext: " + res.rows.item(0).uppertext);
-  }, function(error) {
+  }, function(tx, error) {
     console.log('SELECT error: ' + error.message);
   });
 }, function(error) {
@@ -262,12 +346,13 @@ db.readTransaction(function(tx) {
 });
 ```
 
+**NOTICE:** The `tx.executeSql` success and error callbacks should take two parameters (first parameter for the transaction object). This is different from the single-statement success and error callbacks described above.
+
 **WARNING:** It is NOT allowed to execute sql statements on a transaction after it has finished. Here is an example from my [Populating Cordova SQLite storage with the JQuery API post](http://www.brodybits.com/cordova/sqlite/api/jquery/2015/10/26/populating-cordova-sqlite-storage-with-the-jquery-api.html):
 [post about , for example:
 
 ```Javascript
   // BROKEN SAMPLE:
-  var db = window.sqlitePlugin.openDatabase({name: "test.db"});
   db.executeSql("DROP TABLE IF EXISTS tt");
   db.executeSql("CREATE TABLE tt (data)");
 
@@ -297,7 +382,7 @@ You can find more details and a step-by-step description how to do this right in
 
 ### Multi-part transactions
 
-Sample:
+Sample (with success and error callbacks):
 
 ```Javascript
 var tx = db.beginTransaction();
@@ -307,15 +392,15 @@ tx.executeSql("CREATE TABLE mytable (myfield)");
 tx.executeSql("INSERT INTO mytable values(?)", ['test value']);
 tx.executeSql("SELECT * from mytable", [], function(tx, res) {
   console.log("Got value: " + res.rows.item(0).myfield);
-}, function(e) {
+}, function(tx, e) {
   console.log("Ignore unexpected error callback with message: " + e.message);
   return false;
 });
 
 tx.end(function() {
-  console.log('Optional success callback');
+  console.log('Optional success callback fired');
 }, function(e) {
-  console.log("Optional error callback with message: " + e.message);
+  console.log("Optional error callback fired with message: " + e.message);
 });
 ```
 
@@ -330,7 +415,8 @@ tx.abort(function() {
 ```
 
 IMPORTANT NOTES:
-- In case a `tx.executeSql` call results in an error and it does not have an error callback or the error callback does NOT return `false`, the transaction will be aborted with a ROLLBACK upon the `tx.end` call.
+- In case a `tx.executeSql` call results in an error and it does not have an error callback or the error callback does NOT return `false`, the transaction will be aborted *immediately* with a ROLLBACK ~~upon the `tx.end` call~~.
+- **BUG:** If a `tx.executeSql` call results in an error for which there is no error callback, the error callback does NOT return `false`, or the error callback throws an exception, the transaction is silently aborted and no `tx.end` callbacks will be fired.
 - When a multi-part transaction is started by the `db.beginTransaction` call, all other transactions are blocked until the multi-part transaction is either completed successfully or aborted (with a ROLLBACK).
 
 ## Background processing
@@ -673,6 +759,8 @@ To run then from a windows powershell do either
 
 TBD NOT TESTED with this version
 
+**BROKEN:** The Lawnchair adapter does not support the `openDatabase` options such as `location` or `iosDatabaseLocation` options and is therefore *not* expected to work with this plugin.
+
 ### Common adapter
 
 Please look at the `Lawnchair-adapter` tree that contains a common adapter, which should also work with the Android version, along with a test-www directory.
@@ -738,4 +826,3 @@ TBD fix for this version:
 ## Contact
 
 info@litehelpers.net
-

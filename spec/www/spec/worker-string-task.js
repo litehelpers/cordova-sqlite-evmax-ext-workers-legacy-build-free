@@ -2,7 +2,7 @@ importScripts('SQLitePlugin.js');
 
 self.addEventListener('message', function(ev) {
     if (ev.data === 'go') {
-        sqlitePlugin.openDatabase({name:'ASCII-string-test.db'}, function(db) {
+        sqlitePlugin.openDatabase({name:'ASCII-string-test.db', location: 'default'}, function(db) {
           db.transaction(function(tx) {
 
             tx.executeSql("select upper('Some US-ASCII text') as uppertext", [], function(tx, res) {

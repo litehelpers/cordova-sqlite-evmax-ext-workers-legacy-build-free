@@ -94,7 +94,7 @@ var mytests = function() {
           w.postMessage('go');
         }, MYTIMEOUT);
 
-      it(suiteName + 'worker big batch test',
+      xit(suiteName + 'worker big batch test',
         function(done) {
 
           var w = new Worker('spec/worker-big-batch-task.js');
