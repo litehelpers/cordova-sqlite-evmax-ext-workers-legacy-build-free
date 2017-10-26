@@ -12,6 +12,18 @@ NOTE: Commercial licenses for Cordova-sqlite-enterprise-free purchased before Ju
 
 This version is in legacy maintenance status. Only security and extremely critical bug fixes will be considered.
 
+## IMPORTANT API DEPRECATION NOTICE
+
+The following API calls are now deprecated and may be removed in the near future (ref <https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free/issues/5>):
+- `db.transaction()`
+- `db.readTransaction()`
+- `db.beginTransaction()`
+
+It is recommended to use the following calls instead:
+
+- `db.executeSql()` to read data or execute a single modification statement
+- TODO: `db.sqlBatch()` to execute a batch of modification statements within an ACID (atomic, failure-safe) transaction (missing in this plugin version, will be added by merge ref: <https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free/issues/4>)
+
 ## BREAKING CHANGE: Database location parameter is now mandatory
 
 The `location` or `iosDatabaseLocation` *must* be specified in the `openDatabase` and `deleteDatabase` calls, as documented below.
@@ -301,6 +313,9 @@ window.openDatabase = function(dbname, ignored1, ignored2, ignored3) {
 
 The following types of SQL transactions are supported by this version:
 - Single-statement transactions
+- TODO (missing): SQL batch transactions
+
+DEPRECATED, may be removed from this plugin version in the near future:
 - Standard asynchronous transactions
 - Multi-part transactions
 
@@ -317,6 +332,8 @@ db.executeSql("SELECT LENGTH('tenletters') AS stringlength", [], function (res) 
 ```
 
 ## Standard asynchronous transactions
+
+**NOTICE:** This API call is deprecated and may be removed in the near future ref: <https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free/issues/5>
 
 Standard asynchronous transactions follow the HTML5/[Web SQL API](http://www.w3.org/TR/webdatabase/) which is very well documented and uses BEGIN and COMMIT or ROLLBACK to keep the transactions failure-safe. Here is a very simple example from the test suite (with success and error callbacks):
 
@@ -384,7 +401,29 @@ db.readTransaction(function(tx) {
 
 You can find more details and a step-by-step description how to do this right in the [Populating Cordova SQLite storage with the JQuery API post](http://www.brodybits.com/cordova/sqlite/api/jquery/2015/10/26/populating-cordova-sqlite-storage-with-the-jquery-api.html):
 
+### SQL batch transactions
+
+XXX TODO: MISSING in this plugin version, will be included by merge ref: <https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free/issues/4>
+
+```Javascript
+db.sqlBatch([
+  'DROP TABLE IF EXISTS TT',
+  'CREATE TABLE TT (SampleColumn)',
+  [ 'INSERT INTO TT VALUES (?)', ['test-value'] ],
+], function() {
+  db.executeSql('SELECT * FROM TT', [], function (resultSet) {
+    console.log('column value: ' + resultSet.rows.item(0).SampleColumn);
+  });
+}, function(err) {
+  console.log('error: ' + err.message);
+});
+```
+
+_In case of an error, all changes in a sql batch are automatically discarded using ROLLBACK._
+
 ### Multi-part transactions
+
+**NOTICE:** This API call is deprecated and may be removed in the near future ref: <https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free/issues/5>
 
 Sample (with success and error callbacks):
 
