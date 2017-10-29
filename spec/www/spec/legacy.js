@@ -596,11 +596,11 @@ var mytests = function() {
             });
           });
         });
-        
+
         test_it(suiteName + "executeSql fails outside transaction", function() {
           withTestTable(function(db) {
             expect(4);
-            ok(!!db, "db ok");            
+            ok(!!db, "db ok");
             var txg;
             stop(2);
             db.transaction(function(tx) {
@@ -625,7 +625,7 @@ var mytests = function() {
                 ok(!!err.message, "error had valid message");
               }
               start(1);
-            });            
+            });
           });
         });
 
@@ -809,7 +809,7 @@ var mytests = function() {
               start(1);
             });
             start(1);
-          }, function(err) { 
+          }, function(err) {
             ok(false, "transaction failure with message: " + err.message);
             start(1);
           });
@@ -1143,7 +1143,7 @@ var mytests = function() {
                             JSON.stringify(name) + ' should not be in this until a bug is fixed ' +
                             JSON.stringify(expected));
 
-                        equal(name.length, 0, 'length of field === 0'); 
+                        equal(name.length, 0, 'length of field === 0');
                         start();
                         return;
                     }
@@ -1320,7 +1320,6 @@ var mytests = function() {
           db1.transaction(function (tx1) {
             tx1.executeSql('CREATE TABLE IF NOT EXISTS test1 (x int)');
           });
-          
 
           var db2 = openDatabase("DB2", "1.0", "Demo", DEFAULT_SIZE);
           db2.transaction(function (tx2) {
@@ -1922,7 +1921,7 @@ var mytests = function() {
         test_it(suiteName + ' close then re-open allows subsequent queries to run', function () {
           // asynch test coming up
           stop(1);
-        
+
           var dbName = "Database-Close-and-Reopen";
 
           openDatabase(dbName, "1.0", "Demo", DEFAULT_SIZE, function (db) {
@@ -1944,7 +1943,7 @@ var mytests = function() {
                     }, function(tx) {
                       // close on transaction success not while executing
                       // or commit will fail
-                      db.close(); 
+                      db.close();
                     });
                   }, function (error) {
                     ok(false, error.message);
