@@ -249,17 +249,21 @@ Contact for commercial license: info@litehelpers.net
         };
       })(this);
       this.openDBs[this.dbname] = DB_STATE_INIT;
-      if (isWorker) {
-        aqrequest('sq', 'open', encodeURIComponent(JSON.stringify([this.openargs])), function(s) {
-          if (s === 'a1') {
-            return opensuccesscb(s);
+      nextTick((function(_this) {
+        return function() {
+          if (isWorker) {
+            return aqrequest('sq', 'open', encodeURIComponent(JSON.stringify([_this.openargs])), function(s) {
+              if (s === 'a1') {
+                return opensuccesscb(s);
+              } else {
+                return openerrorcb();
+              }
+            });
           } else {
-            return openerrorcb();
+            return root.sqlitePluginHelper.exec('open', [_this.openargs], opensuccesscb, openerrorcb);
           }
-        });
-      } else {
-        root.sqlitePluginHelper.exec('open', [this.openargs], opensuccesscb, openerrorcb);
-      }
+        };
+      })(this));
     }
   };
 
@@ -338,7 +342,7 @@ Contact for commercial license: info@litehelpers.net
   };
 
   SQLitePluginTransaction.prototype.start = function() {
-    var err, error1;
+    var err;
     try {
       this.fn(this);
       if (this.executes.length > 0) {
@@ -463,7 +467,7 @@ Contact for commercial license: info@litehelpers.net
     tx = this;
     handlerFor = function(index, didSucceed) {
       return function(response) {
-        var err, error1, sqlError;
+        var err, sqlError;
         try {
           if (didSucceed) {
             tx.handleStatementSuccess(batchExecutes[index].success, response);

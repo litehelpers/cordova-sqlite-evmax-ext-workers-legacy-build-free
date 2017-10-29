@@ -286,14 +286,15 @@
         # store initial DB state:
         @openDBs[@dbname] = DB_STATE_INIT
 
-        if isWorker
-          aqrequest 'sq', 'open', (encodeURIComponent (JSON.stringify [@openargs])), (s) ->
-            if s == 'a1'
-              opensuccesscb s
-            else
-              openerrorcb()
-        else
-          root.sqlitePluginHelper.exec 'open', [ @openargs ], opensuccesscb, openerrorcb
+        nextTick =>
+          if isWorker
+            aqrequest 'sq', 'open', (encodeURIComponent (JSON.stringify [@openargs])), (s) ->
+              if s == 'a1'
+                opensuccesscb s
+              else
+                openerrorcb()
+          else
+            root.sqlitePluginHelper.exec 'open', [ @openargs ], opensuccesscb, openerrorcb
 
       return
 
@@ -858,4 +859,3 @@
 
 #### vim: set filetype=coffee :
 #### vim: set expandtab :
-

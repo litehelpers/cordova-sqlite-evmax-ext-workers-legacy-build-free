@@ -1,5 +1,9 @@
 # Changes
 
+## 0.8.3-pre1
+
+- Open database in the next event tick
+
 ## 0.8.2
 
 - Fix sqlitePlugin.openDatabase and sqlitePlugin.deleteDatabase to check location/iosDatabaseLocation values
