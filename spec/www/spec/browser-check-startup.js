@@ -11,9 +11,11 @@ var isWindows = /Windows /.test(navigator.userAgent); // Windows (8.1)
 //var isIE = isWindows || isWP8 || isWindowsPhone_8_1;
 var isIE = isWindows || isWP8;
 var isWebKit = !isIE; // TBD [Android or iOS]
+var isMac = /Macintosh/.test(navigator.userAgent);
 
 window.hasBrowser = true;
-window.hasWebKitBrowser = isWebKit;
+// window.hasWebKitBrowser = isWebKit;
+window.hasWebKitBrowser = !isWindows && !isWP8 && !isMac;
 
 describe('check startup', function() {
   it('receives deviceready event', function(done) {
@@ -24,7 +26,8 @@ describe('check startup', function() {
   }, MYTIMEOUT);
 
   it('has openDatabase', function() {
-    if (isWebKit) expect(window.openDatabase).toBeDefined();
+    // if (isWebKit) expect(window.openDatabase).toBeDefined();
+    if (window.hasWebKitBrowser) expect(window.openDatabase).toBeDefined();
     expect(window.sqlitePlugin).toBeDefined();
     expect(window.sqlitePlugin.openDatabase).toBeDefined();
   });

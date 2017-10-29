@@ -12,7 +12,11 @@
 
 static SQLitePlugin * plugin = NULL;
 
+#ifdef USE_MACOS_WEBVIEW
+static WebView * webView = NULL;
+#else
 static UIWebView * webView = NULL;
+#endif
 
 static NSMutableDictionary * batchmap = NULL;
 
@@ -209,10 +213,9 @@ static NSMutableDictionary * batchmap = NULL;
     NSObject * res = [self openWithOptions: dict];
 
     // XXX TODO fix error handling
-    //NSString * myScript = [NSString stringWithFormat:@"%@('%@', '%@?%@');", @"aqcallback", cbHandler, cbid, res];
     NSString * myScript = [NSString stringWithFormat:@"%@['%@']('%@?%@');", @"$AQCB", cbHandler, cbid, res];
-    //NSLog(@"dispatch Javascript: %@", myScript);
-    [webView stringByEvaluatingJavaScriptFromString: myScript];
+
+    [self dispatch_aqcb: cbHandler cbId: cbid res: res];
 }
 
 - (id) openWithOptions: (NSDictionary *) options
@@ -429,13 +432,9 @@ static NSMutableDictionary * batchmap = NULL;
     //NSLog(@"res string: %@", r);
 
     NSString * ur = [r stringByAddingPercentEncodingWithAllowedCharacters: [NSCharacterSet URLHostAllowedCharacterSet ]];
-    //NSLog(@"encoded res: %@", ur);
+    // NSLog(@"encoded res: %@", ur);
 
-    // NOTE: double-quotes needed when sending URL-encoded JSON results
-    //NSString * myScript = [NSString stringWithFormat:@"%@('%@', \"%@?%@\");", @"aqcallback", cbHandler, cbid, ur];
-    NSString * myScript = [NSString stringWithFormat:@"%@['%@']('%@?%@');", @"$AQCB", cbHandler, cbid, ur];
-    //NSLog(@"dispatch Javascript: %@", myScript);
-    [webView stringByEvaluatingJavaScriptFromString: myScript];
+    [self dispatch_aqcb: cbHandler cbId: cbid res: ur];
 }
 
 - (id) sqlBatchWithOptions: (NSDictionary *) options
@@ -631,6 +630,18 @@ static NSMutableDictionary * batchmap = NULL;
             sqlite3_bind_text(statement, argIndex, data.bytes, (int)data.length, SQLITE_TRANSIENT);
         }
     }
+}
+
+-(void) dispatch_aqcb: (NSString *) cbHandler cbId: (NSString *) cbid res: (NSObject *) cbres
+{
+    NSString * myScript = [NSString stringWithFormat:@"%@['%@']('%@?%@');", @"$AQCB", cbHandler, cbid, cbres];
+
+    // THANKS for GUIDANCE:
+    // https://nachbaur.com/2014/02/22/forcing-a-method-to-run-on-the-main-thread/
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [webView stringByEvaluatingJavaScriptFromString: myScript];
+    });
+
 }
 
 -(void)dealloc

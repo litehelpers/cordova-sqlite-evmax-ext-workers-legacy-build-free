@@ -35,6 +35,7 @@ var isWindows = /Windows /.test(navigator.userAgent); // Windows (8.1)
 var isAndroid = !isWindows && /Android/.test(navigator.userAgent);
 // var isIE = isWindows || isWP8;
 // var isWebKit = !isIE; // TBD [Android or iOS]
+var isMac = /Macintosh/.test(navigator.userAgent);
 
 //var scenarioList = [ isAndroid ? 'Plugin-sqlite-connector' : 'Plugin', 'HTML5', 'Plugin-android.database' ];
 var scenarioList = [ 'Plugin', 'HTML5' ];
@@ -709,7 +710,7 @@ var mytests = function() {
                   // NOTE: storing big integer in TEXT field WORKING OK with WP(8) version.
                   // It is now suspected that the issue lies with the results handling.
                   // XXX Brody TODO: storing big number in TEXT field is different for Plugin vs. Web SQL!
-                  if (isWebSql)
+                  if (isWebSql || isMac)
                     strictEqual(row.test_text, "1424174959894.0", "[Big] number inserted as string ok");
                   else
                     strictEqual(row.test_text, "1424174959894", "Big integer number inserted as string ok");

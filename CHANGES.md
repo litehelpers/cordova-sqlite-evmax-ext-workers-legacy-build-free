@@ -1,7 +1,8 @@
 # Changes
 
-## 0.8.3-pre1
+## 0.8.3-pre2
 
+- Dispatch result for worker in main thread, needed for macOS ("osx") platform; support macOS ("osx") in this version branch
 - Open database in the next event tick
 
 ## 0.8.2

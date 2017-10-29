@@ -2,7 +2,7 @@
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="cordova-sqlite-evplus-legacy-workers-free"
-    version="0.8.3-pre1">
+    version="0.8.3-pre2">
 
     <name>Cordova sqlite storage - premium enterprise version with legacy support for web workers</name>
 
@@ -63,6 +63,25 @@
         <header-file src="src/common/sqlite3.h" />
         <source-file src="src/common/sqlite3.c" />
 
+    </platform>
+
+    <!-- macOS (osx) -->
+    <platform name="osx">
+        <config-file target="config.xml" parent="/*">
+            <feature name="SQLitePlugin">
+                <param name="ios-package" value="SQLitePlugin" />
+                <!-- THANKS: cordova-plugin-whitelist -->
+                <param name="onload" value="true" />
+            </feature>
+        </config-file>
+
+        <!-- Note: the macOS (osx) src is based off src/ios implicitly -->
+        <header-file src="src/ios/SQLitePlugin.h" />
+        <source-file src="src/ios/SQLitePlugin.m"
+                     compiler-flags="-DUSE_MACOS_WEBVIEW" />
+
+        <header-file src="src/common/sqlite3.h" />
+        <source-file src="src/common/sqlite3.c" />
     </platform>
 
 </plugin>
