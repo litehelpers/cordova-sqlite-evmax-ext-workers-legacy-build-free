@@ -44,25 +44,37 @@ var mytests = function() {
           w.postMessage('go');
         }, MYTIMEOUT);
 
-      /* ** FUTURE TODO:
-      it(suiteName + 'worker multi-part string tx test',
+      it(suiteName + 'worker sqlBatch success test',
         function(done) {
 
-          var w = new Worker('spec/worker-multi-part-string-task.js');
+          var w = new Worker('spec/worker-sqlbatch-success-task.js');
           expect(w).toBeDefined()
-          AQ.aqworker('string_test', w);
+          AQ.aqworker('worker_sqlbatch_success', w);
 
           w.addEventListener('message', function(ev) {
             expect(ev.data).toBe('OK');
             done();
           });
 
-          w.postMessage('go');
+          w.postMessage('start');
+        }, MYTIMEOUT);
+
+      it(suiteName + 'worker sqlBatch failure test',
+        function(done) {
+
+          var w = new Worker('spec/worker-sqlbatch-failure-task.js');
+          expect(w).toBeDefined()
+          AQ.aqworker('worker_sqlbatch_failure', w);
+
+          w.addEventListener('message', function(ev) {
+            expect(ev.data).toBe('OK');
+            done();
+          });
+
+          w.postMessage('start');
         }, MYTIMEOUT);
 
       // FUTURE TODO: some more worker tests (commented out in spec/mytask.js)
-
-      // ** */
 
       it(suiteName + 'worker [multi-part interleaved tx] test',
         function(done) {
