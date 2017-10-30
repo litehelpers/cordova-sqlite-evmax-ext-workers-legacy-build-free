@@ -1,7 +1,8 @@
 # Changes
 
-## cordova-sqlite-evplus-legacy-workers-free 0.9.0-pre1
+## cordova-sqlite-evplus-legacy-workers-free 0.9.0
 
+- Remove engines constraint from this version branch
 - Dispatch result for worker in main thread, needed for macOS ("osx") platform; support macOS ("osx") in this version branch
 
 ###### cordova-sqlite-legacy-express-core 1.0.1
