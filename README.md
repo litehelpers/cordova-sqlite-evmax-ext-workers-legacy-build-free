@@ -1,5 +1,5 @@
 # Cordova/PhoneGap sqlite storage - premium enterprise version with legacy support for web workers
- 
+
 Test release with *very basic* support for web workers (Android and iOS *ONLY*).
 
 Native interface to sqlite in a Cordova/PhoneGap plugin for Android and iOS with API similar to HTML5/[Web SQL API](http://www.w3.org/TR/webdatabase/).
@@ -10,11 +10,11 @@ TBD: no Circle CI or Travis CI working in this version branch.
 
 NOTE: Commercial licenses for Cordova-sqlite-enterprise-free purchased before July 2016 are valid for this version. Commercial licenses for Cordova-sqlite-evcore versions are *not* valid for this version.
 
-This version is in legacy maintenance status. Only security and extremely critical bug fixes will be considered.
+This version is in legacy maintenance status. Only security, possible data loss, and other highly critical bug fixes will be considered.
 
 ## IMPORTANT API DEPRECATION NOTICE
 
-The following API calls are now deprecated and may be removed in the near future (ref <https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free/issues/5>):
+The following API calls are now deprecated and may be removed in the near future (ref [litehelpers / cordova-sqlite-evplus-legacy-workers-free#5](https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free/issues/5)):
 - `db.transaction()`
 - `db.readTransaction()`
 - `db.beginTransaction()`
@@ -22,7 +22,14 @@ The following API calls are now deprecated and may be removed in the near future
 It is recommended to use the following calls instead:
 
 - `db.executeSql()` to read data or execute a single modification statement
-- TODO: `db.sqlBatch()` to execute a batch of modification statements within an ACID (atomic, failure-safe) transaction (missing in this plugin version, will be added by merge ref: <https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free/issues/4>)
+- TODO: `db.sqlBatch()` to execute a batch of modification statements within an ACID (atomic, failure-safe) transaction (missing in this plugin version, will be added by merge ref: [litehelpers / cordova-sqlite-evplus-legacy-workers-free#4](https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free/issues/4).
+
+**OTHER CALLS DEPRECATED** in this version (not supported within web workers):
+- `db.close()`
+- `sqlitePlugin.deleteDatabase()`
+
+**MAY BE DEPRECATED IN THE FUTURE:**
+- non-default database location
 
 ## BREAKING CHANGE: Database location parameter is now mandatory
 
@@ -55,7 +62,6 @@ Use the `location` or `iosDatabaseLocation` option in `sqlitePlugin.openDatabase
 
 **NOTE:** Changing `BackupWebStorage` in `config.xml` has no effect on a database created by this plugin. `BackupWebStorage` applies only to local storage and/or Web SQL storage created in the WebView (*not* using this plugin). For reference: [phonegap/build#338 (comment)](https://github.com/phonegap/build/issues/338#issuecomment-113328140)
 
-
 ## SECURITY TODO(s)
 
 - XHR URI request mechanism needs a secret code mechanism, like they have in the Cordova framework
@@ -77,11 +83,14 @@ Some **important** pointers:
   - Use `sqlitePlugin.openDatabase` instead of `window.sqlitePlugin.openDatabase`
 - `www/SQLitePlugin.js` is no longer automatically included in the main thread by Cordova.
 
+**iOS WKWebView NOTICE:** Usage in web workers is NOT supported for iOS WKWebView ref: [litehelpers / cordova-sqlite-evplus-legacy-workers-free#6](https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free/issues/6).
+
 ## LIMITATIONS and other TODO(s) to be fixed:
 
-- it is currently not possible to close or delete a database from a web worker
 - extra logging statements (*almost completely* commented out)
 - source code changes to the native Android and iOS versions needs some cleanup
+- not supported for iOS WKWebView ref: [litehelpers / cordova-sqlite-evplus-legacy-workers-free#6](https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free/issues/6)
+- not possible to close or delete a database from a web worker
 
 ## Version Status
 
@@ -237,7 +246,7 @@ var db = window.sqlitePlugin.openDatabase({name: 'my.db', location: 'default'}, 
 
 **WARNING:** The new "default" location value is *NOT* the same as the old default location and would break an upgrade for an app that was using the old default value (0) on iOS.
 
-To specify a different location (affects iOS *only*):
+**MAY BE DEPRECATED IN THE FUTURE:** To specify a different location (affects iOS *only*):
 
 ```js
 var db = window.sqlitePlugin.openDatabase({name: 'my.db', iosDatabaseLocation: 'Library'}, successcb, errorcb);
@@ -250,7 +259,7 @@ where the `iosDatabaseLocation` option may be set to one of the following choice
 
 **WARNING:** Again, the new "default" iosDatabaseLocation value is *NOT* the same as the old default location and would break an upgrade for an app using the old default value (0) on iOS.
 
-*ALTERNATIVE (deprecated):*
+*ALTERNATIVE (deprecated, may be removed from a future version):*
 - `var db = window.sqlitePlugin.openDatabase({name: "my.db", location: 1}, successcb, errorcb);`
 
 with the `location` option set to one the following choices (affects iOS *only*):
@@ -333,7 +342,7 @@ db.executeSql("SELECT LENGTH('tenletters') AS stringlength", [], function (res) 
 
 ## Standard asynchronous transactions
 
-**NOTICE:** This API call is deprecated and may be removed in the near future ref: <https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free/issues/5>
+**NOTICE:** This API call is deprecated and may be removed in the near future ref: [litehelpers / cordova-sqlite-evplus-legacy-workers-free#5](https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free/issues/5).
 
 Standard asynchronous transactions follow the HTML5/[Web SQL API](http://www.w3.org/TR/webdatabase/) which is very well documented and uses BEGIN and COMMIT or ROLLBACK to keep the transactions failure-safe. Here is a very simple example from the test suite (with success and error callbacks):
 
@@ -403,7 +412,7 @@ You can find more details and a step-by-step description how to do this right in
 
 ### SQL batch transactions
 
-XXX TODO: MISSING in this plugin version, will be included by merge ref: <https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free/issues/4>
+XXX TODO: MISSING in this plugin version, will be included by merge ref: [litehelpers / cordova-sqlite-evplus-legacy-workers-free#4](https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free/issues/4)
 
 ```Javascript
 db.sqlBatch([
@@ -423,7 +432,7 @@ _In case of an error, all changes in a sql batch are automatically discarded usi
 
 ### Multi-part transactions
 
-**NOTICE:** This API call is deprecated and may be removed in the near future ref: <https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free/issues/5>
+**NOTICE:** This API call is deprecated and may be removed in the near future ref: [litehelpers / cordova-sqlite-evplus-legacy-workers-free#5](https://github.com/litehelpers/cordova-sqlite-evplus-legacy-workers-free/issues/5).
 
 Sample (with success and error callbacks):
 
@@ -545,6 +554,8 @@ This case will also works with Safari (WebKit), assuming you replace `window.sql
 
 ## Close a database object
 
+DEPRECATED and subject to removal from this plugin version:
+
 ```js
 db.close(successcb, errorcb);
 ```
@@ -609,6 +620,8 @@ db.executeSql("SELECT LENGTH('tenletters') AS stringlength", [], function (res) 
 
 ## Delete a database
 
+DEPRECATED and subject to removal from this plugin version:
+
 ```js
 window.sqlitePlugin.deleteDatabase({name: "my.db", location: 1}, successcb, errorcb);
 ```
@@ -622,7 +635,7 @@ window.sqlitePlugin.deleteDatabase({name: "my.db", location: 1}, successcb, erro
     npm install -g cordova # if you don't have cordova
     cordova create MyProjectFolder com.my.project MyProject && cd MyProjectFolder # if you are just starting
     cordova plugin add https://github.com/litehelpers/Cordova-sqlite-evplus-legacy-workers-free
- 
+
 You can find more details at [this writeup](http://iphonedevlog.wordpress.com/2014/04/07/installing-chris-brodys-sqlite-database-with-cordova-cli-android/).
 
 **IMPORTANT:** sometimes you have to update the version for a platform before you can build, like: `cordova prepare ios`
@@ -696,12 +709,12 @@ diff -u Cordova-sqlite-storage/src/android/io/liteglue/SQLitePlugin.java src/io/
 @@ -22,8 +22,8 @@
  import java.util.regex.Matcher;
  import java.util.regex.Pattern;
- 
+
 -import org.apache.cordova.CallbackContext;
 -import org.apache.cordova.CordovaPlugin;
 +import org.apache.cordova.api.CallbackContext;
 +import org.apache.cordova.api.CordovaPlugin;
- 
+
  import org.json.JSONArray;
  import org.json.JSONException;
 ```
@@ -727,7 +740,7 @@ Sample change to `config.xml` for Cordova/PhoneGap 2.x:
 +++ config.xml	2013-05-17 13:18:49.000000000 +0200
 @@ -39,6 +39,7 @@
      <content src="index.html" />
- 
+
      <plugins>
 +        <plugin name="SQLitePlugin" value="SQLitePlugin" />
          <plugin name="Device" value="CDVDevice" />
@@ -798,51 +811,15 @@ To run then from a windows powershell do either
 
 # Adapters
 
+WARNING: these adapters are not tested, not supported with web workers.
+
 ## Lawnchair Adapter
 
-TBD NOT TESTED with this version
-
-**BROKEN:** The Lawnchair adapter does not support the `openDatabase` options such as `location` or `iosDatabaseLocation` options and is therefore *not* expected to work with this plugin.
-
-### Common adapter
-
-Please look at the `Lawnchair-adapter` tree that contains a common adapter, which should also work with the Android version, along with a test-www directory.
-
-### Included files
-
-Include the following Javascript files in your HTML:
-
-- `cordova.js` (don't forget!)
-- `lawnchair.js` (you provide)
-- `SQLitePlugin.js` (in case of Cordova pre-3.0)
-- `Lawnchair-sqlitePlugin.js` (must come after `SQLitePlugin.js` in case of Cordova pre-3.0)
-
-### Sample
-
-The `name` option determines the sqlite database filename, *with no extension automatically added*. Optionally, you can change the db filename using the `db` option.
-
-In this example, you would be using/creating a database with filename `kvstore`:
-
-```Javascript
-kvstore = new Lawnchair({name: "kvstore"}, function() {
-  // do stuff
-);
-```
-
-Using the `db` option you can specify the filename with the desired extension and be able to create multiple stores in the same database file. (There will be one table per store.)
-
-```Javascript
-recipes = new Lawnchair({db: "cookbook", name: "recipes", ...}, myCallback());
-ingredients = new Lawnchair({db: "cookbook", name: "ingredients", ...}, myCallback());
-```
-
-**KNOWN ISSUE:** the new db options are *not* supported by the Lawnchair adapter. The workaround is to first open the database file using `sqlitePlugin.openDatabase()`.
+- [litehelpers / cordova-sqlite-lawnchair-adapter](https://github.com/litehelpers/cordova-sqlite-lawnchair-adapter)
 
 ## PouchDB
 
-The adapter is now part of [PouchDB](http://pouchdb.com/) thanks to [@nolanlawson](https://github.com/nolanlawson), see [PouchDB FAQ](http://pouchdb.com/faq.html).
-
-**NOTE:** The PouchDB adapter has not been tested with the Android version which is using the new [Android-sqlite-connector](https://github.com/liteglue/Android-sqlite-connector).
+- [nolanlawson / pouchdb-adapter-cordova-sqlite](https://github.com/nolanlawson/pouchdb-adapter-cordova-sqlite)
 
 # Contributing
 
