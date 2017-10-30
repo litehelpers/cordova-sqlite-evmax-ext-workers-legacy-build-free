@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016: Christopher J. Brody (aka Chris Brody)
+ * Copyright (c) 2012-2017: Christopher J. Brody (aka Chris Brody)
  * Copyright (c) 2005-2010, Nitobi Software Inc.
  * Copyright (c) 2010, IBM Corporation
  *
@@ -7,7 +7,7 @@
  * Contact for commercial license: info@litehelpers.net
  */
 
-package io.liteglue;
+package io.sqlc;
 
 import android.annotation.SuppressLint;
 
@@ -32,6 +32,8 @@ import org.apache.cordova.CordovaResourceApi;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import io.liteglue.*;
 
 public class SQLitePlugin extends CordovaPlugin {
 
@@ -248,10 +250,17 @@ public class SQLitePlugin extends CordovaPlugin {
 
         boolean status = true;
         JSONObject o;
+        String echo_value;
         String dbname;
 
 //Log.i("info", "*..");
         switch (action) {
+            case echoStringValue:
+                o = args.getJSONObject(0);
+                echo_value = o.getString("value");
+                cbc.success(echo_value);
+                break;
+
             case open:
 //Log.i("info", "*...");
                 o = args.getJSONObject(0);
@@ -382,7 +391,7 @@ public class SQLitePlugin extends CordovaPlugin {
                 DBRunner r = dbrmap.get(dbname);
                 if (r != null) {
                     try {
-                        r.q.put(q); 
+                        r.q.put(q);
                     } catch(Exception e) {
                         Log.e(SQLitePlugin.class.getSimpleName(), "couldn't add to queue", e);
                         cbc.error("couldn't add to queue");
@@ -466,6 +475,10 @@ public class SQLitePlugin extends CordovaPlugin {
 
             SQLiteConnection mydbc = connector.newSQLiteConnection(dbfile.getAbsolutePath(),
                 SQLiteOpenFlags.READWRITE | SQLiteOpenFlags.CREATE);
+
+            // FUTURE TBD OPTION to use SQLiteAndroidDatabase:
+            // SQLiteAndroidDatabase mydb = new SQLiteAndroidDatabase();
+            // mydb.open(dbfile);
 
             // Indicate Android version with flat JSON interface
             cbc.success("a1");
@@ -626,9 +639,9 @@ public class SQLitePlugin extends CordovaPlugin {
                     myStatement.bindNull(i + 1);
                 } else {
                     Object p = paramsAsJson.get(jsonParamIndex);
-                    if (p instanceof Float || p instanceof Double) 
+                    if (p instanceof Float || p instanceof Double)
                         myStatement.bindDouble(i + 1, paramsAsJson.getDouble(jsonParamIndex));
-                    else if (p instanceof Number) 
+                    else if (p instanceof Number)
                         myStatement.bindLong(i + 1, paramsAsJson.getLong(jsonParamIndex));
                     else
                         myStatement.bindTextNativeString(i + 1, paramsAsJson.getString(jsonParamIndex));
@@ -738,6 +751,13 @@ public class SQLitePlugin extends CordovaPlugin {
         DBRunner(final String dbname, JSONObject options, CallbackContext cbc) {
             this.dbname = dbname;
 
+            //* FUTURE TBD OPTION to use SQLiteAndroidDatabase:
+            //* this.oldImpl = options.has("androidOldDatabaseImplementation");
+            //* Log.v(SQLitePlugin.class.getSimpleName(), "Android db implementation: built-in android.database.sqlite package");
+            //* this.bugWorkaround = this.oldImpl && options.has("androidBugWorkaround");
+            //* if (this.bugWorkaround)
+            //*     Log.v(SQLitePlugin.class.getSimpleName(), "Android db closing/locking workaround applied");
+
             this.q = new LinkedBlockingQueue<DBQuery>();
             this.openCbc = cbc;
         }
@@ -758,6 +778,12 @@ public class SQLitePlugin extends CordovaPlugin {
 
                 while (!dbq.stop) {
                     executeSqlBatch(mydbc, dbq.queries, dbq.flatlist, dbq.cbc);
+
+                    //* FUTURE TBD OPTION to use SQLiteAndroidDatabase:
+                    //* mydb.executeSqlBatch(dbq.queries, dbq.jsonparams, dbq.queryIDs, dbq.cbc);
+                    //*
+                    //* if (this.bugWorkaround && dbq.queries.length == 1 && dbq.queries[0] == "COMMIT")
+                    //*     mydb.bugWorkaround();
 
                     dbq = q.take();
                 }
@@ -785,7 +811,7 @@ public class SQLitePlugin extends CordovaPlugin {
                             Log.e(SQLitePlugin.class.getSimpleName(), "couldn't delete database", e);
                             dbq.cbc.error("couldn't delete database: " + e);
                         }
-                    }                    
+                    }
                 } catch (Exception e) {
                     Log.e(SQLitePlugin.class.getSimpleName(), "couldn't close database", e);
                     if (dbq.cbc != null) {
@@ -849,6 +875,7 @@ public class SQLitePlugin extends CordovaPlugin {
     }
 
     private static enum Action {
+        echoStringValue,
         open,
         close,
         delete,

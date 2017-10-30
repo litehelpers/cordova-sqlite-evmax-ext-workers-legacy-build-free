@@ -19,13 +19,14 @@
 - Android JSON memory fix by @brodybits (Chris Brody)
 - Android-sqlite-connector and Android-sqlite-native-driver by @brodybits (Chris Brody)
 
-## iOS version
+## iOS/macOS version
 
 - Original authors: @davibe (Davide Bertola <dade@dadeb.it>) and @joenoon (Joe Noon <joenoon@gmail.com>)
 - Cordova 2.7+ port with background processing by @j3k0 (Jean-Christophe Hoelt <hoelt@fovea.cc>)
 - Maintained by @brodybits (Chris Brody)
 
-## Windows (8.1) version
+## REMOVED from this version branch: Windows (8.1) version
 
-- SQLiteProxy.js by @vldmrrr (Vladimir Avdonin) and @brodybits (Chris Brody)
-- SQLite3-WinRT C++ classes and SQLite3JS (Javascript part) by @doo (doo GmbH)
+- ~~SQLiteProxy.js by @vldmrrr (Vladimir Avdonin) and @brodybits (Chris Brody)~~
+- ~~Using SQLite3-WinRT C++ classes and SQLite3JS (Javascript part) by @doo (doo GmbH)~~
+- ~~Thanks to @AllJoyn-Cordova for idea how to integrate Windows 8.1/Windows Phone 8.1 Visual C++ projects in plugin.xml~~

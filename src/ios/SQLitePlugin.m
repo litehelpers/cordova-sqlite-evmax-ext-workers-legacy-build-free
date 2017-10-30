@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016: Christopher J. Brody (aka Chris Brody)
+ * Copyright (c) 2012-2017: Christopher J. Brody (aka Chris Brody)
  * Copyright (C) 2011 Davide Bertola
  *
  * License for this version: GPL v3 (http://www.gnu.org/licenses/gpl.txt) or commercial license.
@@ -9,6 +9,13 @@
 #import "SQLitePlugin.h"
 
 #import "sqlite3.h"
+
+// XXX GONE:
+// FUTURE TBD (in another version branch):
+//#define READ_BLOB_AS_BASE64
+
+// FUTURE TBD (in another version branch & TBD subjet to change):
+//#define INCLUDE_SQL_BLOB_BINDING
 
 static SQLitePlugin * plugin = NULL;
 
@@ -194,7 +201,27 @@ static NSMutableDictionary * batchmap = NULL;
     return dbPath;
 }
 
+-(void)echoStringValue: (CDVInvokedUrlCommand*)command
+{
+    CDVPluginResult * pluginResult = nil;
+    NSMutableDictionary * options = [command.arguments objectAtIndex:0];
+
+    NSString * string_value = [options objectForKey:@"value"];
+
+    NSLog(@"echo string value: %@", string_value);
+
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:string_value];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+}
+
 -(void)open: (CDVInvokedUrlCommand*)command
+{
+    [self.commandDelegate runInBackground:^{
+        [self openNow: command];
+    }];
+}
+
+-(void)openNow: (CDVInvokedUrlCommand*)command
 {
     NSMutableDictionary *options = [command.arguments objectAtIndex:0];
 
@@ -291,8 +318,14 @@ static NSMutableDictionary * batchmap = NULL;
 #endif
 }
 
-
 -(void) close: (CDVInvokedUrlCommand*)command
+{
+    [self.commandDelegate runInBackground:^{
+        [self closeNow: command];
+    }];
+}
+
+-(void)closeNow: (CDVInvokedUrlCommand*)command
 {
     CDVPluginResult* pluginResult = nil;
     NSMutableDictionary *options = [command.arguments objectAtIndex:0];
@@ -324,6 +357,13 @@ static NSMutableDictionary * batchmap = NULL;
 }
 
 -(void) delete: (CDVInvokedUrlCommand*)command
+{
+    [self.commandDelegate runInBackground:^{
+        [self deleteNow: command];
+    }];
+}
+
+-(void)deleteNow: (CDVInvokedUrlCommand*)command
 {
     CDVPluginResult* pluginResult = nil;
     NSMutableDictionary *options = [command.arguments objectAtIndex:0];
@@ -357,7 +397,7 @@ static NSMutableDictionary * batchmap = NULL;
 -(void) backgroundExecuteSqlBatch: (CDVInvokedUrlCommand*)command
 {
     [self.commandDelegate runInBackground:^{
-        [self executeSqlBatch: command];
+        [self executeSqlBatchNow: command];
     }];
 }
 
@@ -410,7 +450,7 @@ static NSMutableDictionary * batchmap = NULL;
     [self sql_batch_dict: o2 cbHandler: cbHandler cbId: cbid];
 }
 
--(void) executeSqlBatch: (CDVInvokedUrlCommand*)command
+-(void) executeSqlBatchNow: (CDVInvokedUrlCommand*)command
 {
     NSMutableDictionary *options = [command.arguments objectAtIndex:0];
 
@@ -705,5 +745,20 @@ static NSMutableDictionary * batchmap = NULL;
             return UNKNOWN_ERR;
     }
 }
+
+// XXX GONE:
+// #ifdef READ_BLOB_AS_BASE64
+#if 0
++(NSString*)getBlobAsBase64String:(const char*)blob_chars
+                       withLength:(int)blob_length
+{
+    // THANKS for guidance: http://stackoverflow.com/a/8354941/1283667
+    NSData * data = [NSData dataWithBytes: (const void *)blob_chars length: blob_length];
+
+    // THANKS for guidance:
+    // https://github.com/apache/cordova-ios/blob/master/guides/API%20changes%20in%204.0.md#nsdatabase64h-removed
+    return [data base64EncodedStringWithOptions:0];
+}
+#endif
 
 @end /* vim: set expandtab : */

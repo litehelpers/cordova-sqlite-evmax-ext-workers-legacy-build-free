@@ -2,7 +2,7 @@
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="cordova-sqlite-evplus-legacy-workers-free"
-    version="0.8.3-pre2">
+    version="0.9.0-pre1">
 
     <name>Cordova sqlite storage - premium enterprise version with legacy support for web workers</name>
 
@@ -26,13 +26,16 @@
         <!-- Cordova >= 3.0.0 -->
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="SQLitePlugin">
-                <param name="android-package" value="io.liteglue.SQLitePlugin"/>
+                <param name="android-package" value="io.sqlc.SQLitePlugin"/>
                 <!-- THANKS: cordova-plugin-whitelist -->
                 <param name="onload" value="true" />
             </feature>
         </config-file>
 
-        <source-file src="src/android/io/liteglue/SQLitePlugin.java" target-dir="src/io/liteglue"/>
+        <source-file src="src/android/io/sqlc/SQLitePlugin.java" target-dir="src/io/sqlc"/>
+        <!-- NOT USED in this version branch:
+        <source-file src="src/android/io/sqlc/SQLiteAndroidDatabase.java" target-dir="src/io/sqlc"/>
+         -->
 
         <!-- Android-sqlite-connector: -->
         <source-file src="src/android/libs/sqlite-connector.jar" target-dir="libs"/>
