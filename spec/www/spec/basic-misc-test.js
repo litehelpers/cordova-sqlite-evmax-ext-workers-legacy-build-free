@@ -55,15 +55,14 @@ var mytests = function() {
 
         // Known to work with:
         // - iOS 9 Web SQL
-        // - Android-sqlite-connector with newer sqlite3 build (in cordova-sqlite-ext version)
+        // - Android-sqlite-connector with newer sqlite3 build (...)
         // - iOS plugin with newer sqlite3 build (also in cordova-sqlite-ext version)
         // - Windows (with newer sqlite3 build)
         // SKIPPED in this version branch (fow now)
         it(suiteName + 'db readTransaction with a WITH clause', function(done) {
           if (isWP8) pending('NOT IMPLEMENTED for WP(8)');
           if (isWebSql) pending('SKIP for Web SQL'); // NOT WORKING on all versions (Android/iOS)
-          if (isAndroid) pending('SKIP for Android plugin'); // NOT WORKING on all versions (FUTURE TBD Android-sqlite-connetor)
-          if (!(isAndroid || isWindows || isWP8)) pending('SKIP for iOS'); // NOT WORKING on all versions of iOS
+          if (isAndroid) pending('SKIP for Android plugin (android.database implementation)'); // NOT SUPPORTED on all android.database versions
 
           var db = openDatabase('tx-with-a-with-clause-test.db', '1.0', 'Test', DEFAULT_SIZE);
 
@@ -235,7 +234,7 @@ var mytests = function() {
         it(suiteName + 'create virtual table using R-Tree', function(done) {
           if (isWebSql) pending('SKIP for (Android/iOS WebKit) Web SQL');
           if (isWP8) pending('NOT IMPLEMENTED for WP(8)'); // NOT IMPLEMENTED in CSharp-SQLite
-          if (isAndroid) pending('NOT IMPLEMENTED for all versions of Android'); // NOT IMPLEMENTED for all versions of Android database (failed in Circle CI)
+          // if (isAndroid && isImpl2) pending('NOT IMPLEMENTED for all versions of android.database'); // NOT IMPLEMENTED for all versions of Android database (failed in Circle CI)
 
           var db = openDatabase('virtual-table-using-r-tree.db', '1.0', 'Test', DEFAULT_SIZE);
 

@@ -31,6 +31,7 @@ var mytests = function() {
 
       it(suiteName + 'worker memory test',
         function(done) {
+          if (/Android [1-4]/.test(navigator.userAgent)) pending('SKIP - NOT SUPPORTED for Android [version 1.x-4.x]');
 
           var w = new Worker('spec/worker-memory-task.js');
           expect(w).toBeDefined()

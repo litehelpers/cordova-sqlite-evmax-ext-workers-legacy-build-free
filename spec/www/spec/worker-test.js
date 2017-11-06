@@ -31,6 +31,7 @@ var mytests = function() {
 
       it(suiteName + 'worker string test',
         function(done) {
+          if (/Android [1-4]/.test(navigator.userAgent)) pending('SKIP - NOT SUPPORTED for Android [version 1.x-4.x]');
 
           var w = new Worker('spec/worker-string-task.js');
           expect(w).toBeDefined()
@@ -46,6 +47,7 @@ var mytests = function() {
 
       it(suiteName + 'worker sqlBatch success test',
         function(done) {
+          if (/Android [1-4]/.test(navigator.userAgent)) pending('SKIP - NOT SUPPORTED for Android [version 1.x-4.x]');
 
           var w = new Worker('spec/worker-sqlbatch-success-task.js');
           expect(w).toBeDefined()
@@ -61,6 +63,7 @@ var mytests = function() {
 
       it(suiteName + 'worker sqlBatch failure test',
         function(done) {
+          if (/Android [1-4]/.test(navigator.userAgent)) pending('SKIP - NOT SUPPORTED for Android [version 1.x-4.x]');
 
           var w = new Worker('spec/worker-sqlbatch-failure-task.js');
           expect(w).toBeDefined()
@@ -78,6 +81,7 @@ var mytests = function() {
 
       it(suiteName + 'worker [multi-part interleaved tx] test',
         function(done) {
+          if (/Android [1-4]/.test(navigator.userAgent)) pending('SKIP - NOT SUPPORTED for Android [version 1.x-4.x]');
 
           var w = new Worker('spec/mytask.js');
           expect(w).toBeDefined()
@@ -93,6 +97,7 @@ var mytests = function() {
 
       it(suiteName + 'worker multi-part tx with NOT NULL contraint violation test',
         function(done) {
+          if (/Android [1-4]/.test(navigator.userAgent)) pending('SKIP - NOT SUPPORTED for Android [version 1.x-4.x]');
 
           var w = new Worker('spec/worker-multi-part-constraint-violation-task.js');
           expect(w).toBeDefined()
@@ -108,6 +113,7 @@ var mytests = function() {
 
       xit(suiteName + 'worker big batch test',
         function(done) {
+          if (/Android [1-4]/.test(navigator.userAgent)) pending('SKIP - NOT SUPPORTED for Android [version 1.x-4.x]');
 
           var w = new Worker('spec/worker-big-batch-task.js');
           expect(w).toBeDefined()

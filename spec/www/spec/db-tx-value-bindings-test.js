@@ -321,10 +321,9 @@ var mytests = function() {
         }
 
         test_it(suiteName + ' returns [Unicode] string with \\u0000 correctly', function () {
-          if (isWindows) pending('BROKEN on Windows'); // XXX
           if (isWP8) pending('BROKEN on WP(8)'); // [BUG #202] UNICODE characters not working with WP(8)
-          // TBD ???:
-          if (isWebSql && !isWindows && isAndroid) pending('BROKEN on Android WebKit Web SQL');
+          if (isWindows) pending('BROKEN on Windows'); // XXX
+          if (isWebSql && isAndroid) pending('SKIP on Android WebKit Web SQL'); // XXX TBD INCONSISTENT RESULTS Android 4 vs 5
 
           stop();
 

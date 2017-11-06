@@ -498,7 +498,7 @@ var mytests = function() {
 
           // XXX [BUG #458] BROKEN for android.database
           // NOTE: This is NOT broken when using Android-sqlite-connector
-          if (isAndroid && !isWebSql) pending('SKIP for Android version of plugin');
+          if (!isWindows && isAndroid && !isWebSql && isImpl2) pending('SKIP for android.database implementation');
 
           var db = openDatabase('tx-sql-starting-with-extra-semicolon-results-test.db', '1.0', 'Test', DEFAULT_SIZE);
 

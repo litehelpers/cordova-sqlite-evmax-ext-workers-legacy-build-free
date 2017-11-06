@@ -10,6 +10,8 @@
 
 #import "sqlite3.h"
 
+#import "PSPDFThreadSafeMutableDictionary.h"
+
 // XXX GONE:
 // FUTURE TBD (in another version branch):
 //#define READ_BLOB_AS_BASE64
@@ -147,7 +149,7 @@ static NSMutableDictionary * batchmap = NULL;
     [NSURLProtocol registerClass: [AQSURLProtocol class]];
 
     {
-        openDBs = [NSMutableDictionary dictionaryWithCapacity:0];
+        openDBs = [PSPDFThreadSafeMutableDictionary dictionaryWithCapacity:0];
         appDBPaths = [NSMutableDictionary dictionaryWithCapacity:0];
 #if !__has_feature(objc_arc)
         [openDBs retain];

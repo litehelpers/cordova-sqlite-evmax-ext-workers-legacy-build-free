@@ -1,5 +1,17 @@
 # Changes
 
+## cordova-sqlite-evmax-ext-workers-legacy-build-free 0.1.0
+
+##### cordova-sqlite-legacy-core 1.0.2
+
+- Fix log in case of transaction waiting for open to finish; doc fixes
+- SQLite 3.15.2 build with SQLITE_THREADSAFE=2 on iOS/macOS (SQLITE_THREADSAFE=1 on Android/Windows) and other flag fixes in this version branch to avoid possible malformed database due to multithreaded access ref: litehelpers/Cordova-sqlite-storage#703
+- Windows 10 (UWP) build with /SAFESEH flag on Win32 (x86) target
+
+###### cordova-sqlite-legacy-express-core 1.0.2
+
+- Use PSPDFThreadSafeMutableDictionary for iOS/macOS to avoid threading issue ref: litehelpers/Cordova-sqlite-storage#716
+
 ## cordova-sqlite-evplus-legacy-workers-free 0.9.0
 
 - Remove engines constraint from this version branch
@@ -16,6 +28,13 @@
 - Drop engine constraints in package.json & plugin.xml (in this version branch)
 - Remove Lawnchair adapter from this version branch
 - Support macOS platform with builtin libsqlite3.dylib framework in this version branch
+
+### cordova-sqlite-storage 1.4.0
+
+- Now using cordova-sqlite-storage-dependencies for SQLite 3.8.10.2 Android/iOS/Windows
+- Android-sqlite-connector implementation supported by this version again
+- Enforce minimum cordova-windows version (should be OK in Cordova 6.x)
+- Support Windows 10 along with Windows 8.1/Windows Phone 8.1
 
 ### cordova-sqlite-storage 1.2.2
 

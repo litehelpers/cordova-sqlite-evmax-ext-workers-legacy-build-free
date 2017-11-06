@@ -476,15 +476,24 @@ public class SQLitePlugin extends CordovaPlugin {
             SQLiteConnection mydbc = connector.newSQLiteConnection(dbfile.getAbsolutePath(),
                 SQLiteOpenFlags.READWRITE | SQLiteOpenFlags.CREATE);
 
-            // FUTURE TBD OPTION to use SQLiteAndroidDatabase:
-            // SQLiteAndroidDatabase mydb = new SQLiteAndroidDatabase();
-            // mydb.open(dbfile);
+            /* FUTURE TBD support androidDatabaseImplementation: 2 setting with optional bug workaround:
+            SQLiteAndroidDatabase mydb = old_impl ? new SQLiteAndroidDatabase() : new SQLiteConnectorDatabase();
+            mydb.open(dbfile);
+
+            if (cbc != null) // XXX Android locking/closing BUG workaround
+                cbc.success();
+            return mydb;
+            // */
 
             // Indicate Android version with flat JSON interface
             cbc.success("a1");
 
             return mydbc;
         } catch (Exception e) {
+            /* FUTURE TBD support androidDatabaseImplementation: 2 setting with optional bug workaround:
+            if (cbc != null) // XXX Android locking/closing BUG workaround
+                cbc.error("can't open database " + e);
+            // */
             cbc.error("can't open database " + e);
             throw e;
         }
