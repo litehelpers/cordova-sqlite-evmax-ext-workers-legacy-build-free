@@ -1,5 +1,9 @@
 # Changes
 
+## cordova-sqlite-evmax-ext-workers-legacy-build-free 0.1.1-fix1
+
+TBD
+
 ## cordova-sqlite-evmax-ext-workers-legacy-build-free 0.1.0
 
 ##### cordova-sqlite-legacy-core 1.0.2
