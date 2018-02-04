@@ -294,20 +294,12 @@
         # store initial DB state:
         @openDBs[@dbname] = DB_STATE_INIT
 
-        # As a WORKAROUND SOLUTION to BUG litehelpers/Cordova-sqlite-storage#666
-        # (in the next event tick):
-        # If the database was never opened on the JavaScript side
-        # start an extra ROLLBACK statement to abort any pending transaction
-        # (does not matter whether it succeeds or fails here).
-        # FUTURE TBD a better solution would be to send a special signal or parameter
-        # if the database was never opened on the JavaScript side.
-        nextTick =>
-          if not txLocks[@dbname]
-            myfn = (tx) ->
-              tx.addStatement 'ROLLBACK'
-              return
-            @addTransaction new SQLitePluginTransaction @, myfn, null, null, false, false
-
+        # XXX NO UNWANTED WORKAROUND SOLUTION for
+        # BUG litehelpers/Cordova-sqlite-storage#666
+        # in this plugin version as discussed in
+        # https://github.com/litehelpers/cordova-sqlite-evmax-ext-workers-legacy-build-free/issues/7
+        # nextTick =>
+        if (true)
           if isWorker
             aqrequest 'sq', 'open', (encodeURIComponent (JSON.stringify [@openargs])), (s) ->
               if s == 'a1'
@@ -1005,20 +997,53 @@
           # TX SHOULD SUCCEED to demonstrate solution to BUG litehelpers/Cordova-sqlite-storage#666:
           db.transaction (tx) ->
             tx.executeSql 'SELECT ? AS myResult', [null], (ignored, resutSet) ->
-              if !resutSet.rows
-                return SelfTest.finishWithError errorcb, 'Missing resutSet.rows'
-              if !resutSet.rows.length
-                return SelfTest.finishWithError errorcb, 'Missing resutSet.rows.length'
-              if resutSet.rows.length isnt 1
-                return SelfTest.finishWithError errorcb,
-                  "Incorrect resutSet.rows.length value: #{resutSet.rows.length} (expected: 1)"
-              SelfTest.step3 successcb, errorcb
+              # XXX TBD IGNORED FOR NOW:
+              # if !resutSet.rows
+              #   return SelfTest.finishWithError errorcb, 'Missing resutSet.rows'
+              # if !resutSet.rows.length
+              #   return SelfTest.finishWithError errorcb, 'Missing resutSet.rows.length'
+              # if resutSet.rows.length isnt 1
+              #   return SelfTest.finishWithError errorcb,
+              #     "Incorrect resutSet.rows.length value: #{resutSet.rows.length} (expected: 1)"
+              # SelfTest.step3 successcb, errorcb
               return
             return
+
           , (txError) ->
-            # NOT EXPECTED:
-            return SelfTest.finishWithError errorcb, "UNEXPECTED TRANSACTION ERROR: #{txError}"
+            # XXX
+            # EXPECTED RESULT DUE TO BUG litehelpers/Cordova-sqlite-storage#666:
+            if !txError
+              return SelfTest.finishWithError errorcb, 'Missing txError object'
+            # second try should work:
+            db.transaction (tx2) ->
+              tx2.executeSql 'SELECT ? AS myResult', [null], (ignored, resutSet) ->
+                if !resutSet.rows
+                  return SelfTest.finishWithError errorcb, 'Missing resutSet.rows'
+                if !resutSet.rows.length
+                  return SelfTest.finishWithError errorcb, 'Missing resutSet.rows.length'
+                if resutSet.rows.length isnt 1
+                  return SelfTest.finishWithError errorcb,
+                SelfTest.step3 successcb, errorcb
+                return
+              return
+            , (tx2_err) ->
+              return SelfTest.finishWithError errorcb, "UNEXPECTED TRANSACTION ERROR: #{tx2_err}"
+            return
+
+          , () ->
+            # XXX
+            # TX SUCCESS POSSIBLE FOR Android (android.database) ONLY
+            # NOTE: Windows 10 (UWP) mobile platform also shows "Android" in navigator.userAgent,
+            # filtered out here.
+            # FUTURE TBD android.database implementation should be fixed to report error in this case.
+            # XXX GONE:
+            # if /Android/.test(navigator.userAgent) and not /Windows /.test(navigator.userAgent)
+            #   return SelfTest.step3 successcb, errorcb
+            # OTHERWISE:
+            # TX SUCCESS NOT EXPECTED DUE TO BUG litehelpers/Cordova-sqlite-storage#666:
+            return SelfTest.finishWithError errorcb, 'UNEXPECTED SUCCESS ref: litehelpers/Cordova-sqlite-storage#666'
           return
+
         , (open_err) ->
           SelfTest.finishWithError errorcb, "Open database error: #{open_err}"
         return

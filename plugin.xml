@@ -2,7 +2,7 @@
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
     id="cordova-sqlite-evmax-ext-workers-legacy-build-free"
-    version="0.1.1-fix1">
+    version="0.1.1-fix2">
 
     <name>Cordova sqlite storage - evmax legacy workers - premium enterprise version with legacy support for web workers</name>
 

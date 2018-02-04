@@ -1,4 +1,3 @@
-
 /*
 License for this version: GPL v3 (http://www.gnu.org/licenses/gpl.txt) or commercial license.
 Contact for commercial license: info@litehelpers.net
@@ -249,28 +248,19 @@ Contact for commercial license: info@litehelpers.net
         };
       })(this);
       this.openDBs[this.dbname] = DB_STATE_INIT;
-      nextTick((function(_this) {
-        return function() {
-          var myfn;
-          if (!txLocks[_this.dbname]) {
-            myfn = function(tx) {
-              tx.addStatement('ROLLBACK');
-            };
-            _this.addTransaction(new SQLitePluginTransaction(_this, myfn, null, null, false, false));
-          }
-          if (isWorker) {
-            return aqrequest('sq', 'open', encodeURIComponent(JSON.stringify([_this.openargs])), function(s) {
-              if (s === 'a1') {
-                return opensuccesscb(s);
-              } else {
-                return openerrorcb();
-              }
-            });
-          } else {
-            return root.sqlitePluginHelper.exec('open', [_this.openargs], opensuccesscb, openerrorcb);
-          }
-        };
-      })(this));
+      if (true) {
+        if (isWorker) {
+          aqrequest('sq', 'open', encodeURIComponent(JSON.stringify([this.openargs])), function(s) {
+            if (s === 'a1') {
+              return opensuccesscb(s);
+            } else {
+              return openerrorcb();
+            }
+          });
+        } else {
+          root.sqlitePluginHelper.exec('open', [this.openargs], opensuccesscb, openerrorcb);
+        }
+      }
     }
   };
 
@@ -909,20 +899,29 @@ Contact for commercial license: info@litehelpers.net
         location: 'default'
       }, function(db) {
         db.transaction(function(tx) {
-          tx.executeSql('SELECT ? AS myResult', [null], function(ignored, resutSet) {
-            if (!resutSet.rows) {
-              return SelfTest.finishWithError(errorcb, 'Missing resutSet.rows');
-            }
-            if (!resutSet.rows.length) {
-              return SelfTest.finishWithError(errorcb, 'Missing resutSet.rows.length');
-            }
-            if (resutSet.rows.length !== 1) {
-              return SelfTest.finishWithError(errorcb, "Incorrect resutSet.rows.length value: " + resutSet.rows.length + " (expected: 1)");
-            }
-            SelfTest.step3(successcb, errorcb);
-          });
+          tx.executeSql('SELECT ? AS myResult', [null], function(ignored, resutSet) {});
         }, function(txError) {
-          return SelfTest.finishWithError(errorcb, "UNEXPECTED TRANSACTION ERROR: " + txError);
+          if (!txError) {
+            return SelfTest.finishWithError(errorcb, 'Missing txError object');
+          }
+          db.transaction(function(tx2) {
+            tx2.executeSql('SELECT ? AS myResult', [null], function(ignored, resutSet) {
+              if (!resutSet.rows) {
+                return SelfTest.finishWithError(errorcb, 'Missing resutSet.rows');
+              }
+              if (!resutSet.rows.length) {
+                return SelfTest.finishWithError(errorcb, 'Missing resutSet.rows.length');
+              }
+              if (resutSet.rows.length !== 1) {
+                return SelfTest.finishWithError(errorcb);
+              }
+              SelfTest.step3(successcb, errorcb);
+            });
+          }, function(tx2_err) {
+            return SelfTest.finishWithError(errorcb, "UNEXPECTED TRANSACTION ERROR: " + tx2_err);
+          });
+        }, function() {
+          return SelfTest.finishWithError(errorcb, 'UNEXPECTED SUCCESS ref: litehelpers/Cordova-sqlite-storage#666');
         });
       }, function(open_err) {
         return SelfTest.finishWithError(errorcb, "Open database error: " + open_err);

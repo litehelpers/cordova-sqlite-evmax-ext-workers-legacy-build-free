@@ -15,11 +15,17 @@ _NOTE: Commercial licenses for Cordova-sqlite-enterprise-free purchased before J
 TBD: no Circle CI or Travis CI working in this version branch.
  -->
 
+<!-- XXX SKIP FOR NOW:
 ## About this version branch
 
 _Proof of concept with *very basic* support for web workers (Android/iOS/macOS ONLY)._
+ -->
 
 <!-- END About this version branch -->
+
+## DATA LOSS RISK WARNING IN MULTI-PAGE APPS
+
+_This plugin version suffers from a data loss risk in case of multi-page apps as discussed in <https://github.com/litehelpers/Cordova-sqlite-storage/issues/666>. Workaround solution in cordova-sqlite-storage is problematic in this plugin version in case of access from both main and worker threads._
 
 ## IMPORTANT API DEPRECATION NOTICE
 
@@ -163,7 +169,6 @@ TBD test:
 
 - Windows 10 (UWP) build with /SAFESEH flag on Win32 (x86) target to specify "Image has Safe Exception Handlers" as described in <https://docs.microsoft.com/en-us/cpp/build/reference/safeseh-image-has-safe-exception-handlers>
 - Fixed iOS/macOS platform version to use [PSPDFThreadSafeMutableDictionary.m](https://gist.github.com/steipete/5928916) to avoid threading issue ref: [litehelpers/Cordova-sqlite-storage#716](https://github.com/litehelpers/Cordova-sqlite-storage/issues/716)
-- Resolved transaction problem after window.location (page) change with possible data loss ref: [litehelpers/Cordova-sqlite-storage#666](https://github.com/litehelpers/Cordova-sqlite-storage/issues/666)
 - [brodybits / cordova-sqlite-test-app](https://github.com/brodybits/cordova-sqlite-test-app) project is a CC0 (public domain) starting point (NOTE that this plugin must be added) and may also be used to reproduce issues with this plugin.
 - The Lawnchair adapter is now moved to [litehelpers / cordova-sqlite-lawnchair-adapter](https://github.com/litehelpers/cordova-sqlite-lawnchair-adapter).
 - [litehelpers / cordova-sqlite-ext](https://github.com/litehelpers/cordova-sqlite-ext) now supports SELECT BLOB data in Base64 format on all platforms in addition to REGEXP (Android/iOS/macOS) and pre-populated database (all platforms).
@@ -254,6 +259,7 @@ As "strongly recommended" by [Web SQL Database API 8.5 SQL injection](https://ww
 
 ## Known issues
 
+- XXX POSSIBLE Transaction problem after page change WITH POSSIBLE DATA LOSS ref: [litehelpers/Cordova-sqlite-storage#666](https://github.com/litehelpers/Cordova-sqlite-storage/issues/666)
 - iOS/macOS platform version does not support certain rapidly repeated open-and-close or open-and-delete test scenarios due to how the implementation handles background processing
 - As described below, auto-vacuum is NOT enabled by default.
 - It is possible to request a SQL statement list such as "SELECT 1; SELECT 2" within a single SQL statement string, however the plugin will only execute the first statement and silently ignore the others ref: [litehelpers/Cordova-sqlite-storage#551](https://github.com/litehelpers/Cordova-sqlite-storage/issues/551)
