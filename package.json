@@ -1,6 +1,6 @@
 {
   "name": "cordova-sqlite-evmax-ext-workers-legacy-build-free",
-  "version": "0.1.1-fix2",
+  "version": "0.1.2",
   "description": "Native interface to SQLite for PhoneGap/Cordova - evmax legacy workers - premium enterprise version with legacy support for web workers",
   "cordova": {
     "id": "cordova-sqlite-evmax-ext-workers-legacy-build-free",

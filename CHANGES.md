@@ -1,5 +1,9 @@
 # Changes
 
+## cordova-sqlite-evmax-ext-workers-legacy-build-free 0.1.2
+
+- cordova-sqlite-evmax-ext-workers-legacy-build-free with SQLITE_THREADSAFE=1 for iOS/macOS ref: litehelpers/Cordova-sqlite-storage#754 (<https://github.com/litehelpers/Cordova-sqlite-storage/issues/754>)
+
 ## cordova-sqlite-evmax-ext-workers-legacy-build-free 0.1.1-fix2
 
 - Revert unwanted BUG 666 workaround solution

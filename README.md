@@ -109,7 +109,7 @@ Some **important** pointers:
 - A recent version of the Cordova CLI (such as `6.5.0` / `7.1.0`) is recommended. (Cordova CLI 8.x includes `cordova-android@7`, NOT supported by this plugin version due to [litehelpers/cordova-sqlite-evplus-legacy-workers-free#9](https://github.com/litehelpers/cordova-sqlite-evmax-ext-workers-legacy-build-free/issues/9).) Cordova versions older than `6.0.0` are missing the `cordova-ios@4.0.0` security fixes. In addition it may be necessary to use `cordova prepare` in case of cordova-ios older than `4.3.0` (Cordova CLI `6.4.0`).
 - This version uses a `before_plugin_install` hook to install sqlite3 library dependencies from `cordova-sqlite-storage-dependencies` via npm.
 - Build with SQLite (version `3.8.10.2`) with the following build settings for iOS/macOS:
-  - `SQLITE_THREADSAFE=2` (`SQLITE_THREADSAFE=1` on Android)
+  - `SQLITE_THREADSAFE=1`
   - `SQLITE_DEFAULT_MEMSTATUS=0`
   - `SQLITE_OMIT_DECLTYPE`
   - `SQLITE_OMIT_DEPRECATED`
